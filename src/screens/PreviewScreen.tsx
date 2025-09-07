@@ -19,15 +19,15 @@ import Animated, {
 } from "react-native-reanimated";
 import MarkdownDisplay from "react-native-markdown-display";
 
-import { RootStackParamList } from "../navigation/AppNavigator";
+import { HomeStackParamList } from "../navigation/AppNavigator";
 import { cn } from "../utils/cn";
 
 type PreviewScreenNavigationProp = NativeStackNavigationProp<
-  RootStackParamList,
+  HomeStackParamList,
   "Preview"
 >;
 
-type PreviewScreenRouteProp = RouteProp<RootStackParamList, "Preview">;
+type PreviewScreenRouteProp = RouteProp<HomeStackParamList, "Preview">;
 
 interface Props {
   navigation: PreviewScreenNavigationProp;
