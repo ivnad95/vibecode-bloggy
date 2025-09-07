@@ -6,7 +6,6 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -32,6 +31,7 @@ import GlassCard from "../components/ui/GlassCard";
 import GlassButton from "../components/ui/GlassButton";
 import GlassInput from "../components/ui/GlassInput";
 import MetricsCard from "../components/ui/MetricsCard";
+import GlassModal from "../components/ui/GlassModal";
 
 
 type EditBlogScreenNavigationProp = NativeStackNavigationProp<
@@ -64,10 +64,23 @@ export default function EditBlogScreen({ navigation, route }: Props) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [seoAnalysis, setSeoAnalysis] = useState<SEOAnalysis | null>(null);
   const [showSEOPanel, setShowSEOPanel] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState<"info" | "warn" | "destructive">("info");
+  const [modalActions, setModalActions] = useState<{ label: string; onPress: () => void; variant?: "primary" | "secondary" | "destructive" }[]>([]);
 
   // Zustand stores
   const { getBlogById, updateBlog } = useHistoryStore();
   const { setCurrentAnalysis } = useBlogStore();
+
+  const showModal = (title: string, message: string, type: "info" | "warn" | "destructive" = "info") => {
+    setModalTitle(title);
+    setModalMessage(message);
+    setModalType(type);
+    setModalActions([{ label: "OK", onPress: () => setModalVisible(false), variant: "primary" }]);
+    setModalVisible(true);
+  };
 
   // Animations
   const seoOpacity = useSharedValue(0);
@@ -107,6 +120,96 @@ export default function EditBlogScreen({ navigation, route }: Props) {
 
     return () => clearTimeout(autoSaveTimer);
   }, [title, content, metaDescription, blog]);
+
+  // Real-time SEO analysis
+  useEffect(() => {
+    const analysisTimer = setTimeout(() => {
+      if (content.trim() && title.trim()) {
+        performQuickSEOAnalysis();
+      }
+    }, 1000);
+
+    return () => clearTimeout(analysisTimer);
+  }, [title, content, keywords]);
+
+  const performQuickSEOAnalysis = () => {
+    const wordCount = content.split(/\s+/).filter(word => word.length > 0).length;
+    const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    const avgSentenceLength = sentences.length > 0 ? wordCount / sentences.length : 0;
+    
+    // Quick scoring
+    let score = 0;
+    const issues = [];
+    
+    // Word count check
+    if (wordCount >= 300) score += 20;
+    else issues.push("Content too short (minimum 300 words recommended)");
+    
+    // Title check
+    if (title.length >= 30 && title.length <= 60) score += 15;
+    else issues.push("Title should be 30-60 characters");
+    
+    // Meta description check
+    if (metaDescription.length >= 120 && metaDescription.length <= 160) score += 15;
+    else issues.push("Meta description should be 120-160 characters");
+    
+    // Keyword usage
+    if (keywords.length > 0) {
+      const keywordInTitle = keywords.some(k => title.toLowerCase().includes(k.toLowerCase()));
+      if (keywordInTitle) score += 20;
+      else issues.push("Include target keywords in title");
+      
+      const keywordInContent = keywords.some(k => content.toLowerCase().includes(k.toLowerCase()));
+      if (keywordInContent) score += 15;
+      else issues.push("Include target keywords in content");
+    }
+    
+    // Headings check
+    const hasH1 = content.includes("# ");
+    const hasH2 = content.includes("## ");
+    if (hasH1 && hasH2) score += 15;
+    else issues.push("Use proper heading structure (H1, H2)");
+    
+    const quickAnalysis: SEOAnalysis = {
+      score: Math.min(score, 100),
+      issues: issues.map(issue => ({
+        type: "warning" as const,
+        message: issue,
+      })),
+      keywords: {
+        primary: keywords.length > 0 ? {
+          keyword: keywords[0],
+          density: 0,
+          occurrences: 0,
+        } : { keyword: "", density: 0, occurrences: 0 },
+        secondary: keywords.slice(1).map(keyword => ({
+          keyword,
+          density: 0,
+          occurrences: 0,
+        })),
+      },
+      readability: {
+        score: Math.max(0, 100 - Math.abs(avgSentenceLength - 15) * 5),
+        level: avgSentenceLength <= 15 ? "Easy" : avgSentenceLength <= 20 ? "Medium" : "Hard",
+        avgSentenceLength: Math.round(avgSentenceLength),
+        avgWordsPerSentence: Math.round(avgSentenceLength),
+      },
+      structure: {
+        hasH1: content.includes("# "),
+        h2Count: (content.match(/## /g) || []).length,
+        h3Count: (content.match(/### /g) || []).length,
+        paragraphCount: content.split("\n\n").length,
+        listCount: (content.match(/^[-*+] /gm) || []).length,
+      },
+    };
+    
+    setSeoAnalysis(quickAnalysis);
+    setCurrentAnalysis(quickAnalysis);
+    if (!showSEOPanel && score < 70) {
+      setShowSEOPanel(true);
+      seoOpacity.value = withTiming(1, { duration: 300 });
+    }
+  };
 
   // SEO Analysis
   const analyzeSEO = async () => {
@@ -213,7 +316,7 @@ export default function EditBlogScreen({ navigation, route }: Props) {
       setShowSEOPanel(true);
       seoOpacity.value = withTiming(1, { duration: 300 });
     } catch (error) {
-      Alert.alert("Analysis Failed", "Failed to analyze SEO. Please try again.");
+      showModal("Analysis Failed", "Failed to analyze SEO. Please try again.", "destructive");
     } finally {
       setIsAnalyzing(false);
     }
@@ -244,7 +347,7 @@ export default function EditBlogScreen({ navigation, route }: Props) {
 
   const handleSave = async () => {
     if (!title.trim() || !content.trim()) {
-      Alert.alert("Missing Content", "Please provide both a title and content for your blog.");
+      showModal("Missing Content", "Please provide both a title and content for your blog.", "warn");
       return;
     }
 
@@ -267,15 +370,15 @@ export default function EditBlogScreen({ navigation, route }: Props) {
         };
 
         updateBlog(blog.id, updatedBlog);
-        Alert.alert("Saved", "Your blog has been updated successfully.");
+        showModal("Saved", "Your blog has been updated successfully.");
       } else {
         // Create new blog (if coming from draft)
-        Alert.alert("Feature Coming Soon", "Creating new blogs from editor will be available soon.");
+        showModal("Feature Coming Soon", "Creating new blogs from editor will be available soon.");
       }
 
       navigation.goBack();
     } catch (error) {
-      Alert.alert("Save Failed", "Failed to save your blog. Please try again.");
+      showModal("Save Failed", "Failed to save your blog. Please try again.", "destructive");
     } finally {
       setIsSaving(false);
     }
@@ -309,6 +412,7 @@ export default function EditBlogScreen({ navigation, route }: Props) {
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           className="flex-1"
+          keyboardVerticalOffset={Platform.OS === "ios" ? 100 : 0}
         >
           {/* Header */}
           <Animated.View entering={FadeIn.delay(200)} className="px-6 pt-4 pb-2">
@@ -347,6 +451,7 @@ export default function EditBlogScreen({ navigation, route }: Props) {
             className="flex-1"
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ paddingBottom: 120 }}
           >
             <View className="px-6 space-y-6">
               {/* SEO Analysis Panel */}
@@ -574,7 +679,7 @@ export default function EditBlogScreen({ navigation, route }: Props) {
               </Animated.View>
 
               {/* Content Editor */}
-              <Animated.View entering={SlideInUp.delay(800)} className="mb-8">
+              <Animated.View entering={SlideInUp.delay(800)} className="mb-12">
                 <GlassCard
                   intensity={25}
                   gradientColors={["rgba(255, 255, 255, 0.25)", "rgba(255, 255, 255, 0.1)"]}
@@ -592,11 +697,16 @@ export default function EditBlogScreen({ navigation, route }: Props) {
                     placeholderTextColor="rgba(255, 255, 255, 0.5)"
                     multiline
                     numberOfLines={20}
-                    className="bg-white/20 rounded-lg p-4 text-white min-h-[400px]"
-                    style={{ textAlignVertical: "top" }}
+                    className="bg-white/20 rounded-lg p-4 text-white min-h-[300px]"
+                    style={{ 
+                      textAlignVertical: "top",
+                      fontSize: 16,
+                      lineHeight: 24
+                    }}
+                    returnKeyType="default"
                   />
                   
-                  <View className="flex-row justify-between mt-2">
+                  <View className="flex-row justify-between mt-3">
                     <Text className="text-xs text-white/70">
                       {content.split(/\s+/).filter(word => word.length > 0).length} words
                     </Text>
@@ -609,6 +719,15 @@ export default function EditBlogScreen({ navigation, route }: Props) {
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
+        
+        <GlassModal
+          visible={modalVisible}
+          title={modalTitle}
+          message={modalMessage}
+          type={modalType}
+          actions={modalActions}
+          onRequestClose={() => setModalVisible(false)}
+        />
       </SafeAreaView>
     </GradientBackground>
   );

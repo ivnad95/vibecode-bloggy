@@ -2,13 +2,14 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  Alert,
   Switch,
   Linking,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import * as Application from "expo-application";
+import * as Sharing from "expo-sharing";
+import * as FileSystem from "expo-file-system";
 import Animated, {
   FadeIn,
   SlideInUp,
@@ -26,6 +27,7 @@ import useBlogStore from "../state/blogStore";
 import GradientBackground from "../components/ui/GradientBackground";
 import GlassCard from "../components/ui/GlassCard";
 import GlassButton from "../components/ui/GlassButton";
+import GlassModal from "../components/ui/GlassModal";
 
 interface SettingItem {
   id: string;
@@ -44,10 +46,24 @@ export default function SettingsScreen() {
   const [autoSave, setAutoSave] = useState(true);
   const [notifications, setNotifications] = useState(true);
   const [analytics, setAnalytics] = useState(true);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState<"info" | "warn" | "destructive">("info");
+  const [modalActions, setModalActions] = useState<{ label: string; onPress: () => void; variant?: "primary" | "secondary" | "destructive" }[]>([]);
+
   // Zustand stores
   const { blogs, clearHistory, exportBlogs, metrics } = useHistoryStore();
   const { clearHistory: clearSEOHistory, exportResearch } = useSEOStore();
   const { resetCurrentBlog } = useBlogStore();
+
+  const showModal = (title: string, message: string, type: "info" | "warn" | "destructive" = "info", actions?: { label: string; onPress: () => void; variant?: "primary" | "secondary" | "destructive" }[]) => {
+    setModalTitle(title);
+    setModalMessage(message);
+    setModalType(type);
+    setModalActions(actions || [{ label: "OK", onPress: () => setModalVisible(false), variant: "primary" }]);
+    setModalVisible(true);
+  };
 
   // Animations
   const scrollY = useSharedValue(0);
@@ -69,128 +85,181 @@ export default function SettingsScreen() {
 
   // Handlers
   const handleExportData = () => {
-    Alert.alert(
+    showModal(
       "Export Data",
       "Choose the format for your data export:",
+      "info",
       [
-        { text: "Cancel", style: "cancel" },
+        { label: "Cancel", onPress: () => setModalVisible(false), variant: "secondary" },
         {
-          text: "JSON",
-          onPress: () => {
-            const blogData = exportBlogs("json");
-            const researchData = exportResearch("json");
-            const combinedData = {
-              blogs: JSON.parse(blogData),
-              research: JSON.parse(researchData),
-              exportDate: new Date().toISOString(),
-              version: "1.0",
-            };
-            
-            // In a real app, you would save this to a file or share it
-            console.log("Export data:", JSON.stringify(combinedData, null, 2));
-            Alert.alert("Export Complete", "Your data has been exported successfully.");
+          label: "JSON",
+          onPress: async () => {
+            try {
+              const blogData = exportBlogs("json");
+              const researchData = exportResearch("json");
+              const combinedData = {
+                blogs: JSON.parse(blogData),
+                research: JSON.parse(researchData),
+                exportDate: new Date().toISOString(),
+                version: "1.0",
+              };
+              
+              const jsonString = JSON.stringify(combinedData, null, 2);
+              const fileName = `seo-blog-data-${new Date().toISOString().split('T')[0]}.json`;
+              const fileUri = FileSystem.documentDirectory + fileName;
+              
+              await FileSystem.writeAsStringAsync(fileUri, jsonString);
+              
+              if (await Sharing.isAvailableAsync()) {
+                await Sharing.shareAsync(fileUri, {
+                  mimeType: "application/json",
+                  dialogTitle: "Export SEO Blog Data",
+                });
+              }
+              
+              setModalVisible(false);
+              setTimeout(() => showModal("Export Complete", "Your data has been exported successfully."), 100);
+            } catch (error) {
+              setModalVisible(false);
+              setTimeout(() => showModal("Export Failed", "Failed to export data. Please try again.", "destructive"), 100);
+            }
           },
+          variant: "primary"
         },
         {
-          text: "CSV",
-          onPress: () => {
-            const csvData = exportBlogs("csv");
-            console.log("CSV Export:", csvData);
-            Alert.alert("Export Complete", "Your blog data has been exported as CSV.");
+          label: "CSV",
+          onPress: async () => {
+            try {
+              const csvData = exportBlogs("csv");
+              const fileName = `seo-blogs-${new Date().toISOString().split('T')[0]}.csv`;
+              const fileUri = FileSystem.documentDirectory + fileName;
+              
+              await FileSystem.writeAsStringAsync(fileUri, csvData);
+              
+              if (await Sharing.isAvailableAsync()) {
+                await Sharing.shareAsync(fileUri, {
+                  mimeType: "text/csv",
+                  dialogTitle: "Export Blog Data",
+                });
+              }
+              
+              setModalVisible(false);
+              setTimeout(() => showModal("Export Complete", "Your blog data has been exported as CSV."), 100);
+            } catch (error) {
+              setModalVisible(false);
+              setTimeout(() => showModal("Export Failed", "Failed to export CSV data. Please try again.", "destructive"), 100);
+            }
           },
+          variant: "primary"
         },
       ]
     );
   };
 
   const handleImportData = () => {
-    Alert.alert(
+    showModal(
       "Import Data",
       "This feature allows you to import previously exported data. Please ensure you have a valid JSON export file.",
+      "info",
       [
-        { text: "Cancel", style: "cancel" },
+        { label: "Cancel", onPress: () => setModalVisible(false), variant: "secondary" },
         {
-          text: "Import",
+          label: "Import",
           onPress: () => {
             // In a real app, you would open a file picker
-            Alert.alert("Coming Soon", "File import functionality will be available in a future update.");
+            setModalVisible(false);
+            setTimeout(() => showModal("Coming Soon", "File import functionality will be available in a future update."), 100);
           },
+          variant: "primary"
         },
       ]
     );
   };
 
   const handleClearAllData = () => {
-    Alert.alert(
+    showModal(
       "Clear All Data",
       "This will permanently delete all your blogs, research data, and settings. This action cannot be undone.",
+      "destructive",
       [
-        { text: "Cancel", style: "cancel" },
+        { label: "Cancel", onPress: () => setModalVisible(false), variant: "secondary" },
         {
-          text: "Clear All",
-          style: "destructive",
+          label: "Clear All",
           onPress: () => {
             clearHistory();
             clearSEOHistory();
             resetCurrentBlog();
-            Alert.alert("Data Cleared", "All your data has been cleared successfully.");
+            setModalVisible(false);
+            setTimeout(() => showModal("Data Cleared", "All your data has been cleared successfully."), 100);
           },
+          variant: "destructive"
         },
       ]
     );
   };
 
   const handleContactSupport = () => {
-    Alert.alert(
+    showModal(
       "Contact Support",
       "Choose how you'd like to get help:",
+      "info",
       [
-        { text: "Cancel", style: "cancel" },
+        { label: "Cancel", onPress: () => setModalVisible(false), variant: "secondary" },
         {
-          text: "Email Support",
+          label: "Email Support",
           onPress: () => {
             Linking.openURL("mailto:support@seobloggen.com?subject=SEO Blog Generator Support");
+            setModalVisible(false);
           },
+          variant: "primary"
         },
         {
-          text: "FAQ",
+          label: "FAQ",
           onPress: () => {
-            Alert.alert("Coming Soon", "FAQ section will be available soon.");
+            setModalVisible(false);
+            setTimeout(() => showModal("Coming Soon", "FAQ section will be available soon."), 100);
           },
+          variant: "primary"
         },
       ]
     );
   };
 
   const handleRateApp = () => {
-    Alert.alert(
+    showModal(
       "Rate Our App",
       "We'd love to hear your feedback! Would you like to rate the SEO Blog Generator?",
+      "info",
       [
-        { text: "Not Now", style: "cancel" },
+        { label: "Not Now", onPress: () => setModalVisible(false), variant: "secondary" },
         {
-          text: "Rate App",
+          label: "Rate App",
           onPress: () => {
             // In a real app, you would open the app store
-            Alert.alert("Thank You!", "Thank you for your feedback!");
+            setModalVisible(false);
+            setTimeout(() => showModal("Thank You!", "Thank you for your feedback!"), 100);
           },
+          variant: "primary"
         },
       ]
     );
   };
 
   const handleShareApp = () => {
-    Alert.alert(
+    showModal(
       "Share App",
       "Help others discover the SEO Blog Generator!",
+      "info",
       [
-        { text: "Cancel", style: "cancel" },
+        { label: "Cancel", onPress: () => setModalVisible(false), variant: "secondary" },
         {
-          text: "Share",
+          label: "Share",
           onPress: () => {
             // In a real app, you would use the sharing API
-            Alert.alert("Coming Soon", "Sharing functionality will be available soon.");
+            setModalVisible(false);
+            setTimeout(() => showModal("Coming Soon", "Sharing functionality will be available soon."), 100);
           },
+          variant: "primary"
         },
       ]
     );
@@ -349,6 +418,7 @@ export default function SettingsScreen() {
             onValueChange={item.onToggle}
             trackColor={{ false: "#d1d5db", true: "#3b82f6" }}
             thumbColor={item.value ? "#ffffff" : "#f3f4f6"}
+            style={{ transform: [{ scaleX: 0.9 }, { scaleY: 0.9 }] }}
           />
         )}
 
@@ -389,6 +459,7 @@ export default function SettingsScreen() {
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
           className="flex-1"
+          contentContainerStyle={{ paddingBottom: 100 }}
         >
           <View className="px-6 space-y-6">
             {/* App Stats */}
@@ -450,12 +521,12 @@ export default function SettingsScreen() {
                     {section.title}
                   </Text>
                   
-                  <View className="space-y-1">
+                  <View className="space-y-2">
                     {section.items.map((item, index) => (
                       <View key={item.id}>
                         {renderSettingItem(item)}
                         {index < section.items.length - 1 && (
-                          <View className="h-px bg-gray-200 ml-14" />
+                          <View className="h-px bg-gray-200/50 ml-14 my-2" />
                         )}
                       </View>
                     ))}
@@ -465,8 +536,8 @@ export default function SettingsScreen() {
             ))}
 
             {/* Footer */}
-            <Animated.View entering={FadeIn.delay(800)} className="pb-8">
-              <Text className="text-center text-gray-500 text-sm leading-relaxed">
+            <Animated.View entering={FadeIn.delay(800)} className="pb-12">
+              <Text className="text-center text-gray-500 text-sm leading-relaxed px-4">
                 SEO Blog Generator helps you create high-quality, optimized content that ranks well in search engines.
                 {"\n\n"}
                 Made with ❤️ for content creators
@@ -474,6 +545,15 @@ export default function SettingsScreen() {
             </Animated.View>
           </View>
         </Animated.ScrollView>
+        
+        <GlassModal
+          visible={modalVisible}
+          title={modalTitle}
+          message={modalMessage}
+          type={modalType}
+          actions={modalActions}
+          onRequestClose={() => setModalVisible(false)}
+        />
       </SafeAreaView>
     </GradientBackground>
   );

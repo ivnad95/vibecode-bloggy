@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -125,7 +125,7 @@ export default function HomeScreen({ navigation }: Props) {
   }));
 
   // Research functionality
-  const handleResearch = async () => {
+  const handleResearch = useCallback(async () => {
     if (!topic.trim()) {
       showModal("Please enter a topic", "You need to provide a blog topic to conduct research.");
       return;
@@ -157,7 +157,7 @@ export default function HomeScreen({ navigation }: Props) {
     } finally {
       setIsResearching(false);
     }
-  };
+  }, [topic, showModal, setIsResearching, setCurrentTopic, getCachedResearch, setResearchData, setCurrentResearch, addResearch, navigation]);
 
   // Blog generation functionality
   const handleGenerate = async () => {

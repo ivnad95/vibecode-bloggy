@@ -1,10 +1,9 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   View,
   Text,
   ScrollView,
   RefreshControl,
-  Alert,
   Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -108,47 +107,47 @@ export default function HistoryScreen({ navigation }: Props) {
     setTimeout(() => setRefreshing(false), 1000);
   };
 
-  const handleBlogPress = (blog: BlogPost) => {
+  const handleBlogPress = useCallback((blog: BlogPost) => {
     navigation.navigate("Preview", {
       blogContent: blog.content,
       topic: blog.topic,
       blogId: blog.id,
     });
-  };
+  }, [navigation]);
 
-  const handleEditBlog = (blog: BlogPost) => {
+  const handleEditBlog = useCallback((blog: BlogPost) => {
     navigation.navigate("EditBlog", { blogId: blog.id });
-  };
+  }, [navigation]);
 
-  const handleDeleteBlog = (blog: BlogPost) => {
+  const handleDeleteBlog = useCallback((blog: BlogPost) => {
     setConfirm({
       visible: true,
       title: "Delete Blog",
       message: `Are you sure you want to delete "${blog.title}"?`,
       onConfirm: () => deleteBlog(blog.id),
     });
-  };
+  }, [deleteBlog]);
 
-  const handleToggleFavorite = (blog: BlogPost) => {
+  const handleToggleFavorite = useCallback((blog: BlogPost) => {
     toggleFavorite(blog.id);
-  };
+  }, [toggleFavorite]);
 
-  const handleSortChange = (newSortBy: typeof sortBy) => {
+  const handleSortChange = useCallback((newSortBy: typeof sortBy) => {
     if (sortBy === newSortBy) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
       setSortBy(newSortBy);
       setSortOrder("desc");
     }
-  };
+  }, [sortBy, sortOrder, setSortBy, setSortOrder]);
 
-  const handleStatusFilter = (status: typeof statusFilter) => {
+  const handleStatusFilter = useCallback((status: typeof statusFilter) => {
     setStatusFilter(status);
-  };
+  }, [setStatusFilter]);
 
-  const handleClearFilters = () => {
+  const handleClearFilters = useCallback(() => {
     resetFilters();
-  };
+  }, [resetFilters]);
 
   // Empty state
   const renderEmptyState = () => (
@@ -199,11 +198,11 @@ export default function HistoryScreen({ navigation }: Props) {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 24 }}
+          contentContainerStyle={{ paddingHorizontal: 24, paddingRight: 48 }}
           className="mb-4"
         >
-          <View className="flex-row space-x-4">
-            <View style={{ width: (width - 60) / 2 }}>
+          <View className="flex-row space-x-3">
+            <View style={{ width: Math.max((width - 80) / 2.2, 160) }}>
               <MetricsCard
                 title="Total Blogs"
                 value={metrics.totalBlogs}
@@ -212,7 +211,7 @@ export default function HistoryScreen({ navigation }: Props) {
                 size="small"
               />
             </View>
-            <View style={{ width: (width - 60) / 2 }}>
+            <View style={{ width: Math.max((width - 80) / 2.2, 160) }}>
               <MetricsCard
                 title="Avg SEO Score"
                 value={Math.round(metrics.averageSeoScore)}
@@ -221,7 +220,7 @@ export default function HistoryScreen({ navigation }: Props) {
                 size="small"
               />
             </View>
-            <View style={{ width: (width - 60) / 2 }}>
+            <View style={{ width: Math.max((width - 80) / 2.2, 160) }}>
               <MetricsCard
                 title="Total Words"
                 value={metrics.totalWordsWritten.toLocaleString()}
@@ -230,7 +229,7 @@ export default function HistoryScreen({ navigation }: Props) {
                 size="small"
               />
             </View>
-            <View style={{ width: (width - 60) / 2 }}>
+            <View style={{ width: Math.max((width - 80) / 2.2, 160) }}>
               <MetricsCard
                 title="This Month"
                 value={metrics.blogsThisMonth}
@@ -360,12 +359,13 @@ export default function HistoryScreen({ navigation }: Props) {
               />
             }
             showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 100 }}
           >
             {renderMetrics()}
             {renderFilterBar()}
 
             {/* Blog List */}
-            <View className="px-6 pb-6">
+            <View className="px-6 pb-12">
               {filteredBlogs.length === 0 ? (
                 <Animated.View
                   entering={FadeIn.delay(300)}
@@ -380,11 +380,12 @@ export default function HistoryScreen({ navigation }: Props) {
                   </Text>
                 </Animated.View>
               ) : (
-                <Animated.View entering={FadeIn.delay(800)}>
+                <Animated.View entering={FadeIn.delay(800)} className="space-y-4">
                   {filteredBlogs.map((blog, index) => (
                     <Animated.View
                       key={blog.id}
                       entering={SlideInUp.delay(900 + index * 100)}
+                      className="mb-3"
                     >
                       <BlogCard
                         blog={blog}

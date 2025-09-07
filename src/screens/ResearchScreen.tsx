@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   RefreshControl,
-  Alert,
   Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -31,6 +30,7 @@ import GlassButton from "../components/ui/GlassButton";
 import KeywordChip from "../components/ui/KeywordChip";
 import MetricsCard from "../components/ui/MetricsCard";
 import ProgressIndicator from "../components/ui/ProgressIndicator";
+import GlassModal from "../components/ui/GlassModal";
 
 type ResearchScreenNavigationProp = NativeStackNavigationProp<
   HomeStackParamList,
@@ -54,10 +54,23 @@ export default function ResearchScreen({ navigation, route }: Props) {
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState<"info" | "warn" | "destructive">("info");
+  const [modalActions, setModalActions] = useState<{ label: string; onPress: () => void; variant?: "primary" | "secondary" | "destructive" }[]>([]);
 
   // Zustand stores
   const { addResearch, getCachedResearch } = useSEOStore();
   const { setCurrentResearch, setIsResearching } = useBlogStore();
+
+  const showModal = (title: string, message: string, type: "info" | "warn" | "destructive" = "info") => {
+    setModalTitle(title);
+    setModalMessage(message);
+    setModalType(type);
+    setModalActions([{ label: "OK", onPress: () => setModalVisible(false), variant: "primary" }]);
+    setModalVisible(true);
+  };
 
   // Animations
   const scrollY = useSharedValue(0);
@@ -103,7 +116,7 @@ export default function ResearchScreen({ navigation, route }: Props) {
       setCurrentResearch(research);
       addResearch(topic, research);
     } catch (error) {
-      Alert.alert("Research Failed", "Failed to conduct SEO research. Please try again.");
+      showModal("Research Failed", "Failed to conduct SEO research. Please try again.", "destructive");
       console.error("SEO research error:", error);
     } finally {
       setIsLoading(false);
@@ -206,6 +219,7 @@ export default function ResearchScreen({ navigation, route }: Props) {
           }
           showsVerticalScrollIndicator={false}
           className="flex-1"
+          contentContainerStyle={{ paddingBottom: 100 }}
         >
           <View className="px-6 space-y-6">
             {/* Overview Metrics */}
@@ -218,8 +232,8 @@ export default function ResearchScreen({ navigation, route }: Props) {
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={{ paddingRight: 24 }}
               >
-                <View className="flex-row space-x-4">
-                  <View style={{ width: (width - 60) / 2 }}>
+                <View className="flex-row space-x-3">
+                  <View style={{ width: Math.max((width - 80) / 2.2, 160) }}>
                     <MetricsCard
                       title="SEO Score"
                       value={researchData.seoScore.overall}
@@ -229,7 +243,7 @@ export default function ResearchScreen({ navigation, route }: Props) {
                       size="small"
                     />
                   </View>
-                  <View style={{ width: (width - 60) / 2 }}>
+                  <View style={{ width: Math.max((width - 80) / 2.2, 160) }}>
                     <MetricsCard
                       title="Search Intent"
                       value={researchData.searchIntent.primary}
@@ -239,7 +253,7 @@ export default function ResearchScreen({ navigation, route }: Props) {
                       size="small"
                     />
                   </View>
-                  <View style={{ width: (width - 60) / 2 }}>
+                  <View style={{ width: Math.max((width - 80) / 2.2, 160) }}>
                     <MetricsCard
                       title="Keywords Found"
                       value={
@@ -253,7 +267,7 @@ export default function ResearchScreen({ navigation, route }: Props) {
                       size="small"
                     />
                   </View>
-                  <View style={{ width: (width - 60) / 2 }}>
+                  <View style={{ width: Math.max((width - 80) / 2.2, 160) }}>
                     <MetricsCard
                       title="Content Gaps"
                       value={researchData.contentGaps.length}
@@ -289,7 +303,7 @@ export default function ResearchScreen({ navigation, route }: Props) {
                 </View>
 
                 {expandedSections.has("primary") ? (
-                  <View className="space-y-2">
+                  <View className="space-y-3">
                     {researchData.primaryKeywords.map((keyword, index) => (
                       <KeywordChip
                         key={index}
@@ -301,17 +315,17 @@ export default function ResearchScreen({ navigation, route }: Props) {
                     ))}
                   </View>
                 ) : (
-                  <View className="flex-row flex-wrap">
+                  <View className="flex-row flex-wrap gap-2">
                     {researchData.primaryKeywords.slice(0, 3).map((keyword, index) => (
-                      <View key={index} className="bg-blue-100 rounded-lg px-3 py-1 mr-2 mb-2">
+                      <View key={index} className="bg-blue-100 rounded-lg px-3 py-2">
                         <Text className="text-blue-800 text-sm font-medium">
                           {keyword.keyword}
                         </Text>
                       </View>
                     ))}
                     {researchData.primaryKeywords.length > 3 && (
-                      <View className="bg-gray-100 rounded-lg px-3 py-1">
-                        <Text className="text-gray-600 text-sm">
+                      <View className="bg-gray-100 rounded-lg px-3 py-2">
+                        <Text className="text-gray-600 text-sm font-medium">
                           +{researchData.primaryKeywords.length - 3} more
                         </Text>
                       </View>
@@ -539,7 +553,7 @@ export default function ResearchScreen({ navigation, route }: Props) {
                   <View className="flex-1">
                     <GlassButton
                       title="Export Research"
-                      onPress={() => Alert.alert("Coming Soon", "Export functionality will be available soon.")}
+                      onPress={() => showModal("Coming Soon", "Export functionality will be available soon.")}
                       variant="secondary"
                       size="medium"
                       fullWidth
@@ -549,7 +563,7 @@ export default function ResearchScreen({ navigation, route }: Props) {
                   <View className="flex-1">
                     <GlassButton
                       title="Save Research"
-                      onPress={() => Alert.alert("Saved", "Research data has been saved to your history.")}
+                      onPress={() => showModal("Saved", "Research data has been saved to your history.")}
                       variant="secondary"
                       size="medium"
                       fullWidth
@@ -561,6 +575,15 @@ export default function ResearchScreen({ navigation, route }: Props) {
             </Animated.View>
           </View>
         </Animated.ScrollView>
+        
+        <GlassModal
+          visible={modalVisible}
+          title={modalTitle}
+          message={modalMessage}
+          type={modalType}
+          actions={modalActions}
+          onRequestClose={() => setModalVisible(false)}
+        />
       </SafeAreaView>
     </GradientBackground>
   );

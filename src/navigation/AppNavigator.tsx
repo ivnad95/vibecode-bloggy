@@ -63,7 +63,7 @@ function HomeStackNavigator() {
         },
         headerTransparent: true,
         headerBlurEffect: "light",
-        headerTintColor: "#1f2937",
+        headerTintColor: "#ffffff",
         headerTitleStyle: {
           fontWeight: "600",
           fontSize: 18,
@@ -124,7 +124,7 @@ function HistoryStackNavigator() {
         },
         headerTransparent: true,
         headerBlurEffect: "light",
-        headerTintColor: "#1f2937",
+        headerTintColor: "#ffffff",
         headerTitleStyle: {
           fontWeight: "600",
           fontSize: 18,
@@ -169,7 +169,7 @@ function AnalyticsStackNavigator() {
         },
         headerTransparent: true,
         headerBlurEffect: "light",
-        headerTintColor: "#1f2937",
+        headerTintColor: "#ffffff",
         headerTitleStyle: {
           fontWeight: "600",
           fontSize: 18,
@@ -198,7 +198,7 @@ function SettingsStackNavigator() {
         },
         headerTransparent: true,
         headerBlurEffect: "light",
-        headerTintColor: "#1f2937",
+        headerTintColor: "#ffffff",
         headerTitleStyle: {
           fontWeight: "600",
           fontSize: 18,
@@ -247,7 +247,7 @@ export default function AppNavigator() {
             return <Ionicons name={iconName} size={size} color={color} />;
           },
           tabBarActiveTintColor: "#3b82f6",
-          tabBarInactiveTintColor: "#6b7280",
+          tabBarInactiveTintColor: "#9ca3af",
           tabBarStyle: {
             position: "absolute",
             bottom: 0,
@@ -256,8 +256,9 @@ export default function AppNavigator() {
             backgroundColor: "transparent",
             borderTopWidth: 0,
             elevation: 0,
-            height: Platform.OS === "ios" ? 88 : 68,
-            paddingBottom: Platform.OS === "ios" ? 28 : 8,
+            height: Platform.OS === "ios" ? 90 : 70,
+            paddingBottom: Platform.OS === "ios" ? 30 : 10,
+            paddingTop: 8,
           },
           tabBarBackground: () => (
             <BlurView

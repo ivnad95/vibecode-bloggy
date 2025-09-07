@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   Image,
-  Alert,
   Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -30,6 +29,7 @@ import GlassCard from "../components/ui/GlassCard";
 import GlassButton from "../components/ui/GlassButton";
 import GlassInput from "../components/ui/GlassInput";
 import ProgressIndicator from "../components/ui/ProgressIndicator";
+import GlassModal from "../components/ui/GlassModal";
 
 type ImageGeneratorScreenNavigationProp = NativeStackNavigationProp<
   HomeStackParamList,
@@ -62,9 +62,22 @@ export default function ImageGeneratorScreen({ route }: Props) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [selectedImage, setSelectedImage] = useState<GeneratedImage | null>(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalType, setModalType] = useState<"info" | "warn" | "destructive">("info");
+  const [modalActions, setModalActions] = useState<{ label: string; onPress: () => void; variant?: "primary" | "secondary" | "destructive" }[]>([]);
 
   // Animations
   const imageScale = useSharedValue(1);
+
+  const showModal = (title: string, message: string, type: "info" | "warn" | "destructive" = "info") => {
+    setModalTitle(title);
+    setModalMessage(message);
+    setModalType(type);
+    setModalActions([{ label: "OK", onPress: () => setModalVisible(false), variant: "primary" }]);
+    setModalVisible(true);
+  };
 
   const imageAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: imageScale.value }],
@@ -99,7 +112,7 @@ export default function ImageGeneratorScreen({ route }: Props) {
   // Handlers
   const handleGenerate = async () => {
     if (!prompt.trim()) {
-      Alert.alert("Missing Prompt", "Please enter a description for your image.");
+      showModal("Missing Prompt", "Please enter a description for your image.", "warn");
       return;
     }
 
@@ -126,9 +139,21 @@ export default function ImageGeneratorScreen({ route }: Props) {
       setGeneratedImages(prev => [newImage, ...prev]);
       setSelectedImage(newImage);
       
-      Alert.alert("Success", "Your image has been generated successfully!");
+      showModal("Success", "Your image has been generated successfully!");
     } catch (error) {
-      Alert.alert("Generation Failed", "Failed to generate image. Please try again.");
+      let errorMessage = "Failed to generate image. Please try again.";
+      
+      if (error instanceof Error) {
+        if (error.message.includes("network")) {
+          errorMessage = "Network error. Please check your connection and try again.";
+        } else if (error.message.includes("quota") || error.message.includes("limit")) {
+          errorMessage = "Generation limit reached. Please try again later.";
+        } else if (error.message.includes("content")) {
+          errorMessage = "Content policy violation. Please modify your prompt and try again.";
+        }
+      }
+      
+      showModal("Generation Failed", errorMessage, "destructive");
       console.error("Image generation error:", error);
     } finally {
       setIsGenerating(false);
@@ -144,7 +169,7 @@ export default function ImageGeneratorScreen({ route }: Props) {
 
   const handleCopyPrompt = async (prompt: string) => {
     await Clipboard.setStringAsync(prompt);
-    Alert.alert("Copied", "Prompt copied to clipboard!");
+    showModal("Copied", "Prompt copied to clipboard!");
   };
 
   const handleShareImage = async (image: GeneratedImage) => {
@@ -154,11 +179,22 @@ export default function ImageGeneratorScreen({ route }: Props) {
           mimeType: "image/png",
           dialogTitle: "Share Generated Image",
         });
+        showModal("Shared", "Image shared successfully!");
       } else {
-        Alert.alert("Sharing not available", "Sharing is not available on this device.");
+        showModal("Sharing not available", "Sharing is not available on this device.", "warn");
       }
     } catch (error) {
-      Alert.alert("Share Failed", "Failed to share image.");
+      let errorMessage = "Failed to share image.";
+      
+      if (error instanceof Error) {
+        if (error.message.includes("cancelled")) {
+          return; // User cancelled, don't show error
+        } else if (error.message.includes("network")) {
+          errorMessage = "Network error. Please check your connection and try again.";
+        }
+      }
+      
+      showModal("Share Failed", errorMessage, "destructive");
     }
   };
 
@@ -183,6 +219,7 @@ export default function ImageGeneratorScreen({ route }: Props) {
           className="flex-1"
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          contentContainerStyle={{ paddingBottom: 100 }}
         >
           <View className="px-6 space-y-6">
             {/* Image Prompt */}
@@ -318,15 +355,22 @@ export default function ImageGeneratorScreen({ route }: Props) {
 
             {/* Generation Progress */}
             {isGenerating && (
-              <Animated.View entering={FadeIn}>
-                <ProgressIndicator
-                  progress={75}
-                  title="Generating Your Image"
-                  subtitle="This may take a few moments..."
-                  variant="linear"
-                  color="blue"
-                  animated
-                />
+              <Animated.View entering={FadeIn} className="px-4">
+                <GlassCard
+                  intensity={25}
+                  gradientColors={["rgba(255, 255, 255, 0.25)", "rgba(255, 255, 255, 0.1)"]}
+                  borderRadius={16}
+                  padding={20}
+                >
+                  <ProgressIndicator
+                    progress={75}
+                    title="Generating Your Image"
+                    subtitle="This may take a few moments..."
+                    variant="linear"
+                    color="blue"
+                    animated
+                  />
+                </GlassCard>
               </Animated.View>
             )}
 
@@ -343,16 +387,18 @@ export default function ImageGeneratorScreen({ route }: Props) {
                     Generated Image
                   </Text>
                   
-                  <Image
-                    source={{ uri: selectedImage.url }}
-                    style={{
-                      width: "100%",
-                      height: 200,
-                      borderRadius: 12,
-                      marginBottom: 12,
-                    }}
-                    resizeMode="cover"
-                  />
+                  <Animated.View style={imageAnimatedStyle}>
+                    <Image
+                      source={{ uri: selectedImage.url }}
+                      style={{
+                        width: "100%",
+                        height: 240,
+                        borderRadius: 12,
+                        marginBottom: 12,
+                      }}
+                      resizeMode="cover"
+                    />
+                  </Animated.View>
                   
                   <View className="space-y-2 mb-4">
                     <Text className="text-gray-700 text-sm">
@@ -405,27 +451,35 @@ export default function ImageGeneratorScreen({ route }: Props) {
                     Recent Images ({generatedImages.length})
                   </Text>
                   
-                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <ScrollView 
+                    horizontal 
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ paddingRight: 24 }}
+                  >
                     <View className="flex-row space-x-3">
-                      {generatedImages.map((image) => (
-                        <Pressable
+                      {generatedImages.map((image, index) => (
+                        <Animated.View
                           key={image.id}
-                          onPress={() => handleImagePress(image)}
-                          className={`rounded-lg overflow-hidden ${
-                            selectedImage?.id === image.id ? "border-2 border-blue-400" : ""
-                          }`}
+                          entering={SlideInUp.delay(900 + index * 100)}
                         >
-                          <Image
-                            source={{ uri: image.url }}
-                            style={{ width: 120, height: 80 }}
-                            resizeMode="cover"
-                          />
-                          <View className="absolute bottom-0 left-0 right-0 bg-black/50 p-1">
-                            <Text className="text-white text-xs" numberOfLines={1}>
-                              {image.style}
-                            </Text>
-                          </View>
-                        </Pressable>
+                          <Pressable
+                            onPress={() => handleImagePress(image)}
+                            className={`rounded-lg overflow-hidden ${
+                              selectedImage?.id === image.id ? "border-2 border-blue-400" : "border border-white/20"
+                            }`}
+                          >
+                            <Image
+                              source={{ uri: image.url }}
+                              style={{ width: 140, height: 100 }}
+                              resizeMode="cover"
+                            />
+                            <View className="absolute bottom-0 left-0 right-0 bg-black/60 p-2">
+                              <Text className="text-white text-xs font-medium" numberOfLines={1}>
+                                {image.style}
+                              </Text>
+                            </View>
+                          </Pressable>
+                        </Animated.View>
                       ))}
                     </View>
                   </ScrollView>
@@ -463,6 +517,15 @@ export default function ImageGeneratorScreen({ route }: Props) {
             </Animated.View>
           </View>
         </ScrollView>
+        
+        <GlassModal
+          visible={modalVisible}
+          title={modalTitle}
+          message={modalMessage}
+          type={modalType}
+          actions={modalActions}
+          onRequestClose={() => setModalVisible(false)}
+        />
       </SafeAreaView>
     </GradientBackground>
   );

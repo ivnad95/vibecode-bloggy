@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -148,15 +148,15 @@ export default function AnalyticsScreen() {
   }, [blogs, timeRange]);
 
   // Handlers
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
     calculateMetrics();
     setTimeout(() => setRefreshing(false), 1000);
-  };
+  }, [calculateMetrics]);
 
-  const handleTimeRangeChange = (range: typeof timeRange) => {
+  const handleTimeRangeChange = useCallback((range: typeof timeRange) => {
     setTimeRange(range);
-  };
+  }, []);
 
   // Empty state
   if (blogs.length === 0) {
@@ -202,19 +202,20 @@ export default function AnalyticsScreen() {
           </Text>
         </Animated.View>
 
-        <Animated.ScrollView
-          onScroll={scrollHandler}
-          scrollEventThrottle={16}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-              tintColor="white"
-            />
-          }
-          showsVerticalScrollIndicator={false}
-          className="flex-1"
-        >
+          <Animated.ScrollView
+            onScroll={scrollHandler}
+            scrollEventThrottle={16}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={handleRefresh}
+                tintColor="white"
+              />
+            }
+            showsVerticalScrollIndicator={false}
+            className="flex-1"
+            contentContainerStyle={{ paddingBottom: 100 }}
+          >
           {/* Time Range Selector */}
           <Animated.View entering={SlideInUp.delay(200)} className="px-6 mb-6">
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -244,11 +245,11 @@ export default function AnalyticsScreen() {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 24 }}
+              contentContainerStyle={{ paddingHorizontal: 24, paddingRight: 48 }}
               className="mb-4"
             >
-              <View className="flex-row space-x-4">
-                <View style={{ width: (width - 60) / 2 }}>
+              <View className="flex-row space-x-3">
+                <View style={{ width: Math.max((width - 80) / 2.2, 160) }}>
                   <MetricsCard
                     title="Total Blogs"
                     value={analyticsData.filteredBlogs.length}
@@ -258,7 +259,7 @@ export default function AnalyticsScreen() {
                     size="small"
                   />
                 </View>
-                <View style={{ width: (width - 60) / 2 }}>
+                <View style={{ width: Math.max((width - 80) / 2.2, 160) }}>
                   <MetricsCard
                     title="Avg SEO Score"
                     value={
@@ -275,7 +276,7 @@ export default function AnalyticsScreen() {
                     size="small"
                   />
                 </View>
-                <View style={{ width: (width - 60) / 2 }}>
+                <View style={{ width: Math.max((width - 80) / 2.2, 160) }}>
                   <MetricsCard
                     title="Total Words"
                     value={analyticsData.filteredBlogs.reduce((sum, blog) => sum + blog.wordCount, 0).toLocaleString()}
@@ -285,7 +286,7 @@ export default function AnalyticsScreen() {
                     size="small"
                   />
                 </View>
-                <View style={{ width: (width - 60) / 2 }}>
+                <View style={{ width: Math.max((width - 80) / 2.2, 160) }}>
                   <MetricsCard
                     title="Research Sessions"
                     value={totalResearches}
@@ -350,7 +351,7 @@ export default function AnalyticsScreen() {
             </Animated.View>
 
             {/* Performance Insights */}
-            <Animated.View entering={SlideInUp.delay(1400)} className="mb-8">
+            <Animated.View entering={SlideInUp.delay(1400)} className="mb-12">
               <GlassCard
                 intensity={20}
                 gradientColors={["rgba(255, 255, 255, 0.9)", "rgba(255, 255, 255, 0.7)"]}
