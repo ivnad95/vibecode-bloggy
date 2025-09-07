@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   Pressable,
-  Alert,
   Share,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -12,6 +11,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RouteProp } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
+import InlineBanner from "../components/ui/InlineBanner";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -37,6 +37,7 @@ interface Props {
 export default function PreviewScreen({ navigation, route }: Props) {
   const { blogContent, topic } = route.params;
   const [isCopying, setIsCopying] = useState(false);
+  const [banner, setBanner] = useState<{ type: "success" | "error" | "warning" | "info"; message: string } | null>(null);
   
   const copyButtonScale = useSharedValue(1);
   const shareButtonScale = useSharedValue(1);
@@ -55,9 +56,9 @@ export default function PreviewScreen({ navigation, route }: Props) {
     
     try {
       await Clipboard.setStringAsync(blogContent);
-      Alert.alert("Copied!", "Blog content has been copied to your clipboard.");
+      setBanner({ type: "success", message: "Copied to clipboard" });
     } catch (error) {
-      Alert.alert("Copy Failed", "Failed to copy content to clipboard.");
+      setBanner({ type: "error", message: "Failed to copy content" });
     } finally {
       setIsCopying(false);
       copyButtonScale.value = withSpring(1);
@@ -73,7 +74,7 @@ export default function PreviewScreen({ navigation, route }: Props) {
         title: `SEO Blog: ${topic}`,
       });
     } catch (error) {
-      Alert.alert("Share Failed", "Failed to share content.");
+      setBanner({ type: "error", message: "Failed to share" });
     } finally {
       shareButtonScale.value = withSpring(1);
     }
@@ -143,6 +144,11 @@ export default function PreviewScreen({ navigation, route }: Props) {
 
         {/* Content */}
         <ScrollView className="flex-1 px-6 py-4">
+          {banner && (
+            <View className="mb-3">
+              <InlineBanner type={banner.type} message={banner.message} />
+            </View>
+          )}
           <MarkdownDisplay style={markdownStyles}>
             {blogContent}
           </MarkdownDisplay>

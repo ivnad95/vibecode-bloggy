@@ -4,7 +4,6 @@ import {
   Text,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   Dimensions,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -32,6 +31,7 @@ import GradientBackground from "../components/ui/GradientBackground";
 import GlassCard from "../components/ui/GlassCard";
 import GlassButton from "../components/ui/GlassButton";
 import GlassInput from "../components/ui/GlassInput";
+import GlassModal from "../components/ui/GlassModal";
 
 type HomeScreenNavigationProp = NativeStackNavigationProp<
   HomeStackParamList,
@@ -45,6 +45,17 @@ interface Props {
 const { width } = Dimensions.get("window");
 
 export default function HomeScreen({ navigation }: Props) {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
+  const [modalActions, setModalActions] = useState<{ label: string; onPress: () => void; variant?: "primary" | "secondary" | "destructive" }[]>([]);
+
+  const showModal = (title: string, message: string) => {
+    setModalTitle(title);
+    setModalMessage(message);
+    setModalActions([{ label: "OK", onPress: () => setModalVisible(false), variant: "primary" }]);
+    setModalVisible(true);
+  };
   const [topic, setTopic] = useState("");
 
   const [researchData, setResearchData] = useState<SEOResearchData | null>(null);
@@ -100,7 +111,7 @@ export default function HomeScreen({ navigation }: Props) {
   // Research functionality
   const handleResearch = async () => {
     if (!topic.trim()) {
-      Alert.alert("Please enter a topic", "You need to provide a blog topic to conduct research.");
+      showModal("Please enter a topic", "You need to provide a blog topic to conduct research.");
       return;
     }
 
@@ -126,8 +137,7 @@ export default function HomeScreen({ navigation }: Props) {
       // Navigate to research screen
       navigation.navigate("Research", { topic: topic.trim() });
     } catch (error) {
-      Alert.alert("Research Failed", "Failed to conduct SEO research. Please try again.");
-      console.error("SEO research error:", error);
+      showModal("Research Failed", "Failed to conduct SEO research. Please try again.");
     } finally {
       setIsResearching(false);
     }
@@ -136,7 +146,7 @@ export default function HomeScreen({ navigation }: Props) {
   // Blog generation functionality
   const handleGenerate = async () => {
     if (!topic.trim()) {
-      Alert.alert("Please enter a topic", "You need to provide a blog topic to generate content.");
+      showModal("Please enter a topic", "You need to provide a blog topic to generate content.");
       return;
     }
 
@@ -183,8 +193,7 @@ export default function HomeScreen({ navigation }: Props) {
         researchId: researchData ? "current" : undefined,
       });
     } catch (error) {
-      Alert.alert("Generation Failed", "Failed to generate blog content. Please try again.");
-      console.error("Blog generation error:", error);
+      showModal("Generation Failed", "Failed to generate blog content. Please try again.");
     } finally {
       setIsGenerating(false);
       cardScale.value = withSpring(1);
@@ -193,7 +202,7 @@ export default function HomeScreen({ navigation }: Props) {
 
   const handleQuickGenerate = async () => {
     if (!topic.trim()) {
-      Alert.alert("Please enter a topic", "You need to provide a blog topic to generate content.");
+      showModal("Please enter a topic", "You need to provide a blog topic to generate content.");
       return;
     }
 
@@ -369,7 +378,7 @@ export default function HomeScreen({ navigation }: Props) {
                   <View className="space-y-3">
                     <GlassButton
                       title="View Blog History"
-                      onPress={() => navigation.navigate("History" as any)}
+                      onPress={() => navigation.getParent()?.navigate("HistoryTab" as never)}
                       variant="ghost"
                       size="medium"
                       fullWidth
@@ -377,7 +386,7 @@ export default function HomeScreen({ navigation }: Props) {
                     />
                     <GlassButton
                       title="SEO Analytics"
-                      onPress={() => navigation.navigate("Analytics" as any)}
+                      onPress={() => navigation.getParent()?.navigate("AnalyticsTab" as never)}
                       variant="ghost"
                       size="medium"
                       fullWidth
@@ -388,6 +397,13 @@ export default function HomeScreen({ navigation }: Props) {
               </Animated.View>
             </View>
           </Animated.ScrollView>
+          <GlassModal
+            visible={modalVisible}
+            title={modalTitle}
+            message={modalMessage}
+            actions={modalActions}
+            onRequestClose={() => setModalVisible(false)}
+          />
         </KeyboardAvoidingView>
       </SafeAreaView>
     </GradientBackground>

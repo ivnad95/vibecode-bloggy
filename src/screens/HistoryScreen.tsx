@@ -31,6 +31,7 @@ import GlassButton from "../components/ui/GlassButton";
 import SearchBar from "../components/ui/SearchBar";
 import BlogCard from "../components/ui/BlogCard";
 import MetricsCard from "../components/ui/MetricsCard";
+import GlassModal from "../components/ui/GlassModal";
 
 type HistoryScreenNavigationProp = NativeStackNavigationProp<
   HistoryStackParamList,
@@ -44,6 +45,7 @@ interface Props {
 const { width } = Dimensions.get("window");
 
 export default function HistoryScreen({ navigation }: Props) {
+  const [confirm, setConfirm] = useState<{ visible: boolean; title: string; message: string; onConfirm?: () => void }>({ visible: false, title: "", message: "" });
   const [refreshing, setRefreshing] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
 
@@ -119,18 +121,12 @@ export default function HistoryScreen({ navigation }: Props) {
   };
 
   const handleDeleteBlog = (blog: BlogPost) => {
-    Alert.alert(
-      "Delete Blog",
-      `Are you sure you want to delete "${blog.title}"?`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => deleteBlog(blog.id),
-        },
-      ]
-    );
+    setConfirm({
+      visible: true,
+      title: "Delete Blog",
+      message: `Are you sure you want to delete "${blog.title}"?`,
+      onConfirm: () => deleteBlog(blog.id),
+    });
   };
 
   const handleToggleFavorite = (blog: BlogPost) => {
@@ -182,7 +178,7 @@ export default function HistoryScreen({ navigation }: Props) {
       ) : (
         <GlassButton
           title="Create Your First Blog"
-          onPress={() => navigation.navigate("Home" as any)}
+          onPress={() => navigation.getParent()?.navigate("HomeTab" as never)}
           variant="primary"
           size="medium"
           icon="add-outline"
@@ -404,6 +400,16 @@ export default function HistoryScreen({ navigation }: Props) {
             </View>
           </Animated.ScrollView>
         )}
+        <GlassModal
+          visible={confirm.visible}
+          title={confirm.title}
+          message={confirm.message}
+          actions={[
+            { label: "Cancel", onPress: () => setConfirm({ visible: false, title: "", message: "" }), variant: "secondary" },
+            { label: "Delete", onPress: () => { confirm.onConfirm?.(); setConfirm({ visible: false, title: "", message: "" }); }, variant: "destructive" }
+          ]}
+          onRequestClose={() => setConfirm({ visible: false, title: "", message: "" })}
+        />
       </SafeAreaView>
     </GradientBackground>
   );

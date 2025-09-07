@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import Animated, {
   FadeIn,
   SlideInUp,
@@ -31,6 +32,7 @@ import ChartContainer from "../components/ui/ChartContainer";
 const { width } = Dimensions.get("window");
 
 export default function AnalyticsScreen() {
+  const nav = useNavigation<any>();
   const [refreshing, setRefreshing] = useState(false);
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d">("30d");
 
@@ -176,7 +178,7 @@ export default function AnalyticsScreen() {
             </Text>
             <GlassButton
               title="Create Your First Blog"
-              onPress={() => {}} // Navigate to home
+              onPress={() => nav.getParent()?.navigate("HomeTab" as never)}
               variant="primary"
               size="medium"
               icon="add-outline"

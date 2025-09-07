@@ -309,7 +309,6 @@ const useSEOStore = create<SEOState>()(
       // Persist most data except current session state
       partialize: (state) => ({
         researchHistory: state.researchHistory,
-        researchCache: state.researchCache,
         totalResearches: state.totalResearches,
         averageResearchScore: state.averageResearchScore,
         topResearchedTopics: state.topResearchedTopics,
