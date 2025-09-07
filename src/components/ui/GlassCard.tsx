@@ -21,6 +21,7 @@ interface GlassCardProps {
   onPress?: () => void;
   borderRadius?: number;
   padding?: number;
+  compact?: boolean;
 }
 
 const AnimatedBlurView = Animated.createAnimatedComponent(BlurView);
@@ -37,6 +38,7 @@ export default function GlassCard({
   onPress,
   borderRadius = 20,
   padding = 20,
+  compact = false,
 }: GlassCardProps) {
   const scale = useSharedValue(1);
   const opacity = useSharedValue(1);
@@ -66,12 +68,15 @@ export default function GlassCard({
     }
   };
 
+  const resolvedPadding = compact && padding === 20 ? 12 : padding;
+  const resolvedRadius = compact && borderRadius === 20 ? 14 : borderRadius;
+
   const CardContent = () => (
     <View
       style={[
         {
-          borderRadius,
-          padding,
+          borderRadius: resolvedRadius,
+          padding: resolvedPadding,
           overflow: "hidden",
           borderWidth: 1,
           borderColor: "rgba(255, 255, 255, 0.2)",
