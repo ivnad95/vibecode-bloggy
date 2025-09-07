@@ -34,21 +34,60 @@ export interface GeneratedBlog {
 }
 
 export async function generateSEOBlog(
-  topic: string, 
+  topic: string,
   options: Partial<BlogGenerationOptions> = {}
 ): Promise<string> {
   const enhancedBlog = await generateEnhancedSEOBlog({
     topic,
     ...options,
-  });
+  } as BlogGenerationOptions);
   return enhancedBlog.content;
+}
+
+// In-memory cache and request coalescing for blog generation
+const BLOG_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+const blogCacheMem = new Map<string, { data: GeneratedBlog; expiresAt: number }>();
+const inFlightBlogs = new Map<string, Promise<GeneratedBlog>>();
+
+function blogKey(opts: BlogGenerationOptions) {
+  const {
+    topic,
+    contentType = "guide",
+    targetAudience = "general",
+    tone = "conversational",
+    includeFAQ = true,
+    includeSchema = true,
+    includeImages = false,
+    wordCount = 2500,
+  } = opts;
+  return JSON.stringify({
+    t: topic.trim().toLowerCase(),
+    ct: contentType,
+    ta: targetAudience,
+    tn: tone,
+    faq: includeFAQ,
+    schema: includeSchema,
+    img: includeImages,
+    wc: wordCount,
+  });
 }
 
 export async function generateEnhancedSEOBlog(
   options: BlogGenerationOptions
 ): Promise<GeneratedBlog> {
   const client = getOpenAIClient();
-  
+  const key = blogKey(options);
+
+  // Cache check
+  const cached = blogCacheMem.get(key);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.data;
+  }
+
+  // Coalesce in-flight requests
+  const flight = inFlightBlogs.get(key);
+  if (flight) return flight;
+
   const {
     topic,
     researchData,
@@ -76,11 +115,11 @@ WORD COUNT TARGET: ${wordCount}+ words
   // Add research data if available
   if (researchData) {
     prompt += `SEO RESEARCH DATA:
-Primary Keywords: ${researchData.primaryKeywords.map(k => k.keyword).join(", ")}
-Secondary Keywords: ${researchData.secondaryKeywords.map(k => k.keyword).join(", ")}
-Long-tail Keywords: ${researchData.longTailKeywords.map(k => k.keyword).join(", ")}
+Primary Keywords: ${researchData.primaryKeywords.map((k) => k.keyword).join(", ")}
+Secondary Keywords: ${researchData.secondaryKeywords.map((k) => k.keyword).join(", ")}
+Long-tail Keywords: ${researchData.longTailKeywords.map((k) => k.keyword).join(", ")}
 Search Intent: ${researchData.searchIntent.primary}
-People Also Ask: ${researchData.peopleAlsoAsk.map(p => p.question).join(", ")}
+People Also Ask: ${researchData.peopleAlsoAsk.map((p) => p.question).join(", ")}
 Related Searches: ${researchData.relatedSearches.join(", ")}
 
 `;
@@ -173,18 +212,19 @@ Return a JSON object with the following structure:
 
 Focus on creating content that genuinely helps users while satisfying search engine requirements. Prioritize user value over keyword density.`;
 
-  try {
+  const task = (async () => {
     const response = await client.chat.completions.create({
       model: "gpt-4o-2024-11-20",
       messages: [
         {
           role: "system",
-          content: "You are an expert SEO content writer who creates high-converting, E-E-A-T optimized blog posts that rank well in Google's 2024-2025 algorithms. Always respond with valid JSON matching the requested structure."
+          content:
+            "You are an expert SEO content writer who creates high-converting, E-E-A-T optimized blog posts that rank well in Google's 2024-2025 algorithms. Always respond with valid JSON matching the requested structure.",
         },
         {
           role: "user",
-          content: prompt
-        }
+          content: prompt,
+        },
       ],
       max_tokens: 4000,
       temperature: 0.7,
@@ -201,57 +241,70 @@ Focus on creating content that genuinely helps users while satisfying search eng
       if (!jsonMatch) {
         throw new Error("No JSON found in response");
       }
-      
+
       const blogData = JSON.parse(jsonMatch[0]) as GeneratedBlog;
-      
+
       // Validate and ensure required fields
       if (!blogData.title || !blogData.content) {
         throw new Error("Invalid blog data structure");
       }
-      
+
       // Calculate reading time if not provided
       if (!blogData.readingTime) {
         const words = blogData.content.split(/\s+/).length;
         blogData.readingTime = Math.ceil(words / 200); // 200 words per minute
       }
-      
+
       // Calculate word count if not provided
       if (!blogData.wordCount) {
-        blogData.wordCount = blogData.content.split(/\s+/).filter(word => word.length > 0).length;
+        blogData.wordCount = blogData.content
+          .split(/\s+/)
+          .filter((word) => word.length > 0).length;
       }
-      
+
       return blogData;
     } catch (parseError) {
       console.error("Failed to parse blog JSON:", parseError);
       // Return fallback structure with the raw content
       return createFallbackBlogData(topic, content);
     }
-  } catch (error) {
-    console.error("Error generating enhanced blog:", error);
-    throw new Error("Failed to generate blog content");
+  })();
+
+  inFlightBlogs.set(key, task);
+  try {
+    const result = await task;
+    blogCacheMem.set(key, { data: result, expiresAt: Date.now() + BLOG_TTL_MS });
+    return result;
+  } finally {
+    inFlightBlogs.delete(key);
   }
 }
 
 function createFallbackBlogData(topic: string, content: string): GeneratedBlog {
-  const wordCount = content.split(/\s+/).filter(word => word.length > 0).length;
-  
+  const wordCount = content.split(/\s+/).filter((word) => word.length > 0).length;
+
   return {
     title: `The Complete Guide to ${topic}`,
     metaDescription: `Discover everything you need to know about ${topic}. Expert tips, strategies, and actionable insights to help you succeed.`,
     content: content,
-    keywords: [topic.toLowerCase(), `${topic.toLowerCase()} guide`, `how to ${topic.toLowerCase()}`],
+    keywords: [
+      topic.toLowerCase(),
+      `${topic.toLowerCase()} guide`,
+      `how to ${topic.toLowerCase()}`,
+    ],
     headings: [
       {
         level: 1,
         text: `The Complete Guide to ${topic}`,
-        anchor: "complete-guide"
-      }
+        anchor: "complete-guide",
+      },
     ],
     faqSection: [
       {
         question: `What is ${topic}?`,
-        answer: `${topic} is a comprehensive approach that involves multiple strategies and techniques to achieve optimal results.`
-      }
+        answer:
+          `${topic} is a comprehensive approach that involves multiple strategies and techniques to achieve optimal results.`,
+      },
     ],
     seoScore: 75,
     readingTime: Math.ceil(wordCount / 200),

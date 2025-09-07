@@ -45,10 +45,31 @@ export interface SEOResearchData {
   };
 }
 
+// In-memory cache and request coalescing to minimize API calls
+const RESEARCH_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+const researchCacheMem = new Map<string, { data: SEOResearchData; expiresAt: number }>();
+const inFlightResearch = new Map<string, Promise<SEOResearchData>>();
+
+function normalizeTopic(t: string) {
+  return t.trim().toLowerCase().replace(/\s+/g, " ");
+}
+
 export async function conductSEOResearch(topic: string): Promise<SEOResearchData> {
   const client = getOpenAIClient();
-  
-  const prompt = `You are an expert SEO researcher and digital marketing strategist. Conduct comprehensive SEO research for the following topic and provide detailed insights.
+  const key = normalizeTopic(topic);
+
+  // Memory cache check
+  const cached = researchCacheMem.get(key);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.data;
+  }
+
+  // In-flight coalescing
+  const flight = inFlightResearch.get(key);
+  if (flight) return flight;
+
+  const task = (async () => {
+    const prompt = `You are an expert SEO researcher and digital marketing strategist. Conduct comprehensive SEO research for the following topic and provide detailed insights.
 
 Topic: "${topic}"
 
@@ -101,45 +122,55 @@ Please analyze and provide:
 
 Format your response as a detailed JSON object that matches the TypeScript interfaces. Be specific and actionable in your recommendations. Focus on 2024-2025 SEO best practices including E-E-A-T, user experience signals, and semantic search optimization.`;
 
-  try {
-    const response = await client.chat.completions.create({
-      model: "gpt-4o-2024-11-20",
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert SEO researcher who provides comprehensive, actionable SEO insights based on current Google algorithm requirements and best practices. Always respond with valid JSON that matches the requested TypeScript interfaces."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      max_tokens: 4000,
-      temperature: 0.3,
-    });
-
-    const content = response.choices[0]?.message?.content;
-    if (!content) {
-      throw new Error("No SEO research data generated");
-    }
-
     try {
-      // Try to parse the JSON response
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error("No JSON found in response");
+      const response = await client.chat.completions.create({
+        model: "gpt-4o-2024-11-20",
+        messages: [
+          {
+            role: "system",
+            content: "You are an expert SEO researcher who provides comprehensive, actionable SEO insights based on current Google algorithm requirements and best practices. Always respond with valid JSON that matches the requested TypeScript interfaces."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        max_tokens: 4000,
+        temperature: 0.3,
+      });
+  
+      const content = response.choices[0]?.message?.content;
+      if (!content) {
+        throw new Error("No SEO research data generated");
       }
-      
-      const researchData = JSON.parse(jsonMatch[0]) as SEOResearchData;
-      return researchData;
-    } catch (parseError) {
-      console.error("Failed to parse SEO research JSON:", parseError);
-      // Return fallback data structure
-      return createFallbackSEOData(topic);
+  
+      try {
+        // Try to parse the JSON response
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+          throw new Error("No JSON found in response");
+        }
+        
+        const researchData = JSON.parse(jsonMatch[0]) as SEOResearchData;
+        return researchData;
+      } catch (parseError) {
+        console.error("Failed to parse SEO research JSON:", parseError);
+        // Return fallback data structure
+        return createFallbackSEOData(topic);
+      }
+    } catch (error) {
+      console.error("Error conducting SEO research:", error);
+      throw new Error("Failed to conduct SEO research");
     }
-  } catch (error) {
-    console.error("Error conducting SEO research:", error);
-    throw new Error("Failed to conduct SEO research");
+  })();
+
+  inFlightResearch.set(key, task);
+  try {
+    const result = await task;
+    researchCacheMem.set(key, { data: result, expiresAt: Date.now() + RESEARCH_TTL_MS });
+    return result;
+  } finally {
+    inFlightResearch.delete(key);
   }
 }
 

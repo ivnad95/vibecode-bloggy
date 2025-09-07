@@ -248,7 +248,7 @@ const useSEOStore = create<SEOState>()(
             ];
             const rows = researchHistory.map(research => [
               research.topic,
-              research.createdAt.toISOString(),
+              new Date(research.createdAt as unknown as string).toISOString(),
               research.research.seoScore.overall.toString(),
               research.research.primaryKeywords.map(k => k.keyword).join("; "),
               research.usedInBlogs.length.toString(),
