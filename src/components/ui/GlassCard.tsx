@@ -1,5 +1,5 @@
 import React from "react";
-import { View, ViewStyle } from "react-native";
+import { View, ViewStyle, Platform } from "react-native";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
@@ -86,8 +86,8 @@ export default function GlassCard({
       className={cn("shadow-lg", className)}
     >
       <AnimatedBlurView
-        intensity={intensity}
-        tint={tint}
+        intensity={Platform.OS === "ios" ? Math.min(intensity * 1.2, 100) : intensity}
+        tint={Platform.OS === "ios" && tint === "light" ? "systemUltraThinMaterialLight" : tint}
         style={{
           position: "absolute",
           top: 0,

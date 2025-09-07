@@ -26,7 +26,7 @@ const openai_api_key = Constants.expoConfig.extra.apikey;
 
 export default function App() {
   return (
-    <GestureHandlerRootView className="flex-1">
+    <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <AppNavigator />
       </SafeAreaProvider>

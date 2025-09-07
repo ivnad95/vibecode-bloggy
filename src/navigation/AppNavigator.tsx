@@ -62,11 +62,12 @@ function HomeStackNavigator() {
           backgroundColor: "transparent",
         },
         headerTransparent: true,
-        headerBlurEffect: "light",
+        headerBlurEffect: Platform.OS === "ios" ? "systemUltraThinMaterialLight" : "light",
         headerTintColor: "#ffffff",
         headerTitleStyle: {
           fontWeight: "600",
-          fontSize: 18,
+          fontSize: Platform.OS === "ios" ? 17 : 18,
+          fontFamily: Platform.OS === "ios" ? "System" : "System",
         },
         headerShadowVisible: false,
       }}
@@ -123,11 +124,12 @@ function HistoryStackNavigator() {
           backgroundColor: "transparent",
         },
         headerTransparent: true,
-        headerBlurEffect: "light",
+        headerBlurEffect: Platform.OS === "ios" ? "systemUltraThinMaterialLight" : "light",
         headerTintColor: "#ffffff",
         headerTitleStyle: {
           fontWeight: "600",
-          fontSize: 18,
+          fontSize: Platform.OS === "ios" ? 17 : 18,
+          fontFamily: Platform.OS === "ios" ? "System" : "System",
         },
         headerShadowVisible: false,
       }}
@@ -168,11 +170,12 @@ function AnalyticsStackNavigator() {
           backgroundColor: "transparent",
         },
         headerTransparent: true,
-        headerBlurEffect: "light",
+        headerBlurEffect: Platform.OS === "ios" ? "systemUltraThinMaterialLight" : "light",
         headerTintColor: "#ffffff",
         headerTitleStyle: {
           fontWeight: "600",
-          fontSize: 18,
+          fontSize: Platform.OS === "ios" ? 17 : 18,
+          fontFamily: Platform.OS === "ios" ? "System" : "System",
         },
         headerShadowVisible: false,
       }}
@@ -197,11 +200,12 @@ function SettingsStackNavigator() {
           backgroundColor: "transparent",
         },
         headerTransparent: true,
-        headerBlurEffect: "light",
+        headerBlurEffect: Platform.OS === "ios" ? "systemUltraThinMaterialLight" : "light",
         headerTintColor: "#ffffff",
         headerTitleStyle: {
           fontWeight: "600",
-          fontSize: 18,
+          fontSize: Platform.OS === "ios" ? 17 : 18,
+          fontFamily: Platform.OS === "ios" ? "System" : "System",
         },
         headerShadowVisible: false,
       }}
@@ -256,30 +260,31 @@ export default function AppNavigator() {
             backgroundColor: "transparent",
             borderTopWidth: 0,
             elevation: 0,
-            height: Platform.OS === "ios" ? 90 : 70,
-            paddingBottom: Platform.OS === "ios" ? 30 : 10,
-            paddingTop: 8,
+            height: Platform.OS === "ios" ? 88 : 70,
+            paddingBottom: Platform.OS === "ios" ? 34 : 10,
+            paddingTop: Platform.OS === "ios" ? 6 : 8,
           },
           tabBarBackground: () => (
             <BlurView
-              intensity={80}
-              tint="light"
+              intensity={Platform.OS === "ios" ? 100 : 80}
+              tint={Platform.OS === "ios" ? "systemUltraThinMaterialLight" : "light"}
               style={{
                 position: "absolute",
                 top: 0,
                 left: 0,
                 right: 0,
                 bottom: 0,
-                borderTopLeftRadius: 20,
-                borderTopRightRadius: 20,
+                borderTopLeftRadius: Platform.OS === "ios" ? 0 : 20,
+                borderTopRightRadius: Platform.OS === "ios" ? 0 : 20,
                 overflow: "hidden",
               }}
             />
           ),
           tabBarLabelStyle: {
-            fontSize: 12,
-            fontWeight: "600",
-            marginTop: 4,
+            fontSize: Platform.OS === "ios" ? 10 : 12,
+            fontWeight: Platform.OS === "ios" ? "500" : "600",
+            marginTop: Platform.OS === "ios" ? 2 : 4,
+            fontFamily: Platform.OS === "ios" ? "System" : "System",
           },
           headerShown: false,
         })}

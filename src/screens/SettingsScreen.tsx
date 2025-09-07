@@ -4,6 +4,7 @@ import {
   Text,
   Switch,
   Linking,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -418,7 +419,9 @@ export default function SettingsScreen() {
             onValueChange={item.onToggle}
             trackColor={{ false: "#d1d5db", true: "#3b82f6" }}
             thumbColor={item.value ? "#ffffff" : "#f3f4f6"}
-            style={{ transform: [{ scaleX: 0.9 }, { scaleY: 0.9 }] }}
+            style={{ 
+              transform: Platform.OS === "ios" ? [{ scaleX: 1 }, { scaleY: 1 }] : [{ scaleX: 0.9 }, { scaleY: 0.9 }] 
+            }}
           />
         )}
 
@@ -459,7 +462,11 @@ export default function SettingsScreen() {
           scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}
           className="flex-1"
-          contentContainerStyle={{ paddingBottom: 100 }}
+          automaticallyAdjustContentInsets={Platform.OS === "ios"}
+          contentInsetAdjustmentBehavior={Platform.OS === "ios" ? "automatic" : undefined}
+          contentContainerStyle={{ 
+            paddingBottom: Platform.OS === "ios" ? 120 : 100 
+          }}
         >
           <View className="px-6 space-y-6">
             {/* App Stats */}

@@ -5,6 +5,7 @@ import {
   ScrollView,
   Pressable,
   Share,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -143,7 +144,12 @@ export default function PreviewScreen({ navigation, route }: Props) {
         </View>
 
         {/* Content */}
-        <ScrollView className="flex-1 px-6 py-4">
+        <ScrollView 
+          className="flex-1 px-6 py-4"
+          automaticallyAdjustContentInsets={Platform.OS === "ios"}
+          contentInsetAdjustmentBehavior={Platform.OS === "ios" ? "automatic" : undefined}
+          showsVerticalScrollIndicator={Platform.OS !== "ios"}
+        >
           {banner && (
             <View className="mb-3">
               <InlineBanner type={banner.type} message={banner.message} />
@@ -164,9 +170,14 @@ export default function PreviewScreen({ navigation, route }: Props) {
                 onPressOut={() => (copyButtonScale.value = withSpring(1))}
                 disabled={isCopying}
                 className={cn(
-                  "bg-blue-600 rounded-xl py-3 px-4 flex-row items-center justify-center",
+                  "bg-blue-600 rounded-xl flex-row items-center justify-center",
                   isCopying && "opacity-50"
                 )}
+                style={{
+                  paddingVertical: Platform.OS === "ios" ? 14 : 12,
+                  paddingHorizontal: Platform.OS === "ios" ? 20 : 16,
+                  minHeight: Platform.OS === "ios" ? 44 : 36,
+                }}
               >
                 <Ionicons 
                   name={isCopying ? "checkmark-outline" : "copy-outline"} 
@@ -184,7 +195,12 @@ export default function PreviewScreen({ navigation, route }: Props) {
                 onPress={handleShare}
                 onPressIn={() => (shareButtonScale.value = withSpring(0.95))}
                 onPressOut={() => (shareButtonScale.value = withSpring(1))}
-                className="bg-gray-600 rounded-xl py-3 px-4 flex-row items-center justify-center min-w-[100px]"
+                className="bg-gray-600 rounded-xl flex-row items-center justify-center min-w-[100px]"
+                style={{
+                  paddingVertical: Platform.OS === "ios" ? 14 : 12,
+                  paddingHorizontal: Platform.OS === "ios" ? 20 : 16,
+                  minHeight: Platform.OS === "ios" ? 44 : 36,
+                }}
               >
                 <Ionicons name="share-outline" size={20} color="white" />
                 <Text className="text-white font-semibold ml-2">Share</Text>

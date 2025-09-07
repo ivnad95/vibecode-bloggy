@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, View, Text, Pressable } from "react-native";
+import { Modal, View, Text, Pressable, Platform } from "react-native";
 import { BlurView } from "expo-blur";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
@@ -49,13 +49,22 @@ export default function GlassModal({
     <Modal
       visible={visible}
       transparent
-      animationType="fade"
+      animationType={Platform.OS === "ios" ? "slide" : "fade"}
+      presentationStyle={Platform.OS === "ios" ? "overFullScreen" : undefined}
       onRequestClose={onRequestClose}
     >
       <View className="flex-1 items-center justify-center">
-        <BlurView intensity={50} tint="light" style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }} />
+        <BlurView 
+          intensity={Platform.OS === "ios" ? 80 : 50} 
+          tint={Platform.OS === "ios" ? "systemUltraThinMaterialLight" : "light"} 
+          style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }} 
+        />
         <View className="w-11/12 max-w-md rounded-2xl overflow-hidden border border-white/30">
-          <BlurView intensity={30} tint="light" style={{ padding: 20 }}>
+          <BlurView 
+            intensity={Platform.OS === "ios" ? 40 : 30} 
+            tint={Platform.OS === "ios" ? "systemUltraThinMaterialLight" : "light"} 
+            style={{ padding: Platform.OS === "ios" ? 24 : 20 }}
+          >
             <View className="items-center mb-3">
               <View className={cn("w-12 h-12 rounded-full items-center justify-center", colorMap[type].badge)}>
                 <Ionicons name={icon} size={24} color={colorMap[type].icon} />
@@ -71,11 +80,17 @@ export default function GlassModal({
                   key={idx}
                   onPress={() => handlePress(action)}
                   className={cn(
-                    "px-4 py-2 rounded-xl",
+                    "rounded-xl",
                     action.variant === "primary" && "bg-blue-600",
                     action.variant === "secondary" && "bg-gray-200",
                     action.variant === "destructive" && "bg-red-600"
                   )}
+                  style={{
+                    paddingHorizontal: Platform.OS === "ios" ? 20 : 16,
+                    paddingVertical: Platform.OS === "ios" ? 12 : 8,
+                    minHeight: Platform.OS === "ios" ? 44 : 36,
+                    justifyContent: "center",
+                  }}
                 >
                   <Text className={cn(
                     "font-semibold",

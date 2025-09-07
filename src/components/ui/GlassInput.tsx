@@ -6,6 +6,7 @@ import {
   TextInputProps,
   ViewStyle,
   TextStyle,
+  Platform,
 } from "react-native";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
@@ -110,36 +111,37 @@ export default function GlassInput({
   };
 
   const getSizeStyles = () => {
+    const isIOS = Platform.OS === "ios";
     switch (size) {
       case "small":
         return {
-          height: 40,
+          height: isIOS ? 44 : 40,
           paddingHorizontal: 12,
-          fontSize: 14,
+          fontSize: isIOS ? 15 : 14,
           borderRadius: 12,
           iconSize: 16,
         };
       case "medium":
         return {
-          height: 48,
+          height: isIOS ? 50 : 48,
           paddingHorizontal: 16,
-          fontSize: 16,
+          fontSize: isIOS ? 17 : 16,
           borderRadius: 16,
           iconSize: 20,
         };
       case "large":
         return {
-          height: 56,
+          height: isIOS ? 56 : 56,
           paddingHorizontal: 20,
-          fontSize: 18,
+          fontSize: isIOS ? 19 : 18,
           borderRadius: 20,
           iconSize: 24,
         };
       default:
         return {
-          height: 48,
+          height: isIOS ? 50 : 48,
           paddingHorizontal: 16,
-          fontSize: 16,
+          fontSize: isIOS ? 17 : 16,
           borderRadius: 16,
           iconSize: 20,
         };

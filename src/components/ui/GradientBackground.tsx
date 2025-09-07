@@ -1,5 +1,5 @@
 import React from "react";
-import { View, ViewStyle } from "react-native";
+import { View, ViewStyle, Platform } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   useAnimatedStyle,
@@ -35,7 +35,7 @@ export default function GradientBackground({
   React.useEffect(() => {
     if (animated) {
       animationProgress.value = withRepeat(
-        withTiming(1, { duration: 8000 }),
+        withTiming(1, { duration: Platform.OS === "ios" ? 10000 : 8000 }),
         -1,
         true
       );

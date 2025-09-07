@@ -5,6 +5,7 @@ import {
   ScrollView,
   RefreshControl,
   Dimensions,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -214,7 +215,11 @@ export default function AnalyticsScreen() {
             }
             showsVerticalScrollIndicator={false}
             className="flex-1"
-            contentContainerStyle={{ paddingBottom: 100 }}
+            automaticallyAdjustContentInsets={Platform.OS === "ios"}
+            contentInsetAdjustmentBehavior={Platform.OS === "ios" ? "automatic" : undefined}
+            contentContainerStyle={{ 
+              paddingBottom: Platform.OS === "ios" ? 120 : 100 
+            }}
           >
           {/* Time Range Selector */}
           <Animated.View entering={SlideInUp.delay(200)} className="px-6 mb-6">

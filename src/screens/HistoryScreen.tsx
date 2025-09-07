@@ -5,6 +5,7 @@ import {
   ScrollView,
   RefreshControl,
   Dimensions,
+  Platform,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -356,10 +357,15 @@ export default function HistoryScreen({ navigation }: Props) {
                 refreshing={refreshing}
                 onRefresh={handleRefresh}
                 tintColor="white"
+                progressBackgroundColor={Platform.OS === "ios" ? "transparent" : "#ffffff"}
               />
             }
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: 100 }}
+            automaticallyAdjustContentInsets={Platform.OS === "ios"}
+            contentInsetAdjustmentBehavior={Platform.OS === "ios" ? "automatic" : undefined}
+            contentContainerStyle={{ 
+              paddingBottom: Platform.OS === "ios" ? 120 : 100 
+            }}
           >
             {renderMetrics()}
             {renderFilterBar()}

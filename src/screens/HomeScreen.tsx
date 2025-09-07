@@ -10,6 +10,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
+import { BlurView } from "expo-blur";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -66,7 +67,9 @@ export default function HomeScreen({ navigation }: Props) {
   const insets = useSafeAreaInsets();
   
   useEffect(() => {
-    expand.value = withTiming(featuresExpanded ? 1 : 0, { duration: 220 });
+    expand.value = withTiming(featuresExpanded ? 1 : 0, { 
+      duration: Platform.OS === "ios" ? 300 : 220 
+    });
   }, [featuresExpanded]);
   
   const chevronStyle = useAnimatedStyle(() => ({
@@ -99,12 +102,12 @@ export default function HomeScreen({ navigation }: Props) {
       scrollY.value = event.contentOffset.y;
       headerOpacity.value = interpolate(
         scrollY.value,
-        [0, 100],
-        [1, 0.8],
+        [0, Platform.OS === "ios" ? 80 : 100],
+        [1, Platform.OS === "ios" ? 0.9 : 0.8],
         "clamp"
       );
     },
-  });
+  }, []);
 
   const headerAnimatedStyle = useAnimatedStyle(() => ({
     opacity: headerOpacity.value,
@@ -112,13 +115,13 @@ export default function HomeScreen({ navigation }: Props) {
       {
         translateY: interpolate(
           scrollY.value,
-          [0, 100],
-          [0, -20],
+          [0, Platform.OS === "ios" ? 80 : 100],
+          [0, Platform.OS === "ios" ? -15 : -20],
           "clamp"
         ),
       },
     ],
-  }));
+  }), []);
 
   const cardAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: cardScale.value }],
@@ -231,12 +234,19 @@ export default function HomeScreen({ navigation }: Props) {
       <SafeAreaView className="flex-1">
         <KeyboardAvoidingView
           behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 88 : 0}
           className="flex-1"
         >
           <Animated.ScrollView
             className="flex-1"
-            contentContainerStyle={{ flexGrow: 1, paddingBottom: 120 }}
+            contentContainerStyle={{ 
+              flexGrow: 1, 
+              paddingBottom: Platform.OS === "ios" ? 140 : 120 
+            }}
             keyboardShouldPersistTaps="handled"
+            keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
+            automaticallyAdjustKeyboardInsets={Platform.OS === "ios"}
+            automaticallyAdjustContentInsets={Platform.OS === "ios"}
             onScroll={scrollHandler}
             scrollEventThrottle={16}
             showsVerticalScrollIndicator={false}
@@ -262,7 +272,12 @@ export default function HomeScreen({ navigation }: Props) {
                 
                 <Animated.Text
                   entering={SlideInUp.delay(600)}
-                  className="text-3xl font-semibold text-white text-center mb-2"
+                  className="text-3xl font-semibold text-white text-center mb-3"
+                  style={{
+                    fontSize: Platform.OS === "ios" ? 28 : 32,
+                    lineHeight: Platform.OS === "ios" ? 34 : 38,
+                    letterSpacing: Platform.OS === "ios" ? -0.5 : 0,
+                  }}
                 >
                   SEO Blog Generator
                 </Animated.Text>
@@ -270,7 +285,12 @@ export default function HomeScreen({ navigation }: Props) {
                 <Animated.Text
                   entering={SlideInUp.delay(800)}
                   numberOfLines={2}
-                  className="text-base text-white/90 text-center leading-snug px-4"
+                  className="text-base text-white/90 text-center px-4"
+                  style={{
+                    fontSize: Platform.OS === "ios" ? 17 : 16,
+                    lineHeight: Platform.OS === "ios" ? 24 : 22,
+                    letterSpacing: Platform.OS === "ios" ? -0.2 : 0,
+                  }}
                 >
                   Create high-ranking, traffic-driving blog posts with AI-powered SEO research and optimization
                 </Animated.Text>
@@ -286,7 +306,14 @@ export default function HomeScreen({ navigation }: Props) {
                   gradientColors={["rgba(255, 255, 255, 0.25)", "rgba(255, 255, 255, 0.1)"]}
                   className="mb-6"
                 >
-                  <Text className="text-xl font-bold text-white mb-4">
+                  <Text 
+                    className="text-xl font-bold text-white mb-4"
+                    style={{
+                      fontSize: Platform.OS === "ios" ? 22 : 20,
+                      lineHeight: Platform.OS === "ios" ? 28 : 24,
+                      letterSpacing: Platform.OS === "ios" ? -0.3 : 0,
+                    }}
+                  >
                     What's your blog topic?
                   </Text>
                   
@@ -407,11 +434,29 @@ export default function HomeScreen({ navigation }: Props) {
             pointerEvents="box-none"
             style={{ position: "absolute", left: 0, right: 0, bottom: 0 }}
           >
+            {Platform.OS === "ios" && (
+              <BlurView
+                intensity={60}
+                tint="systemUltraThinMaterialLight"
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  borderTopLeftRadius: 20,
+                  borderTopRightRadius: 20,
+                }}
+              />
+            )}
             <View
               style={{
                 paddingHorizontal: 24,
-                paddingBottom: Math.max(insets.bottom, 12),
-                paddingTop: 10,
+                paddingBottom: Platform.OS === "ios" ? Math.max(insets.bottom, 20) : 12,
+                paddingTop: Platform.OS === "ios" ? 12 : 10,
+                backgroundColor: Platform.OS === "ios" ? "transparent" : "rgba(255, 255, 255, 0.95)",
+                borderTopLeftRadius: Platform.OS === "ios" ? 20 : 0,
+                borderTopRightRadius: Platform.OS === "ios" ? 20 : 0,
               }}
             >
               <View style={{ flexDirection: "row" }}>

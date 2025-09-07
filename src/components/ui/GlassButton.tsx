@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, Pressable, ViewStyle, TextStyle } from "react-native";
+import { Text, Pressable, ViewStyle, TextStyle, Platform } from "react-native";
 import { BlurView } from "expo-blur";
 import { LinearGradient } from "expo-linear-gradient";
 import { Ionicons } from "@expo/vector-icons";
@@ -110,38 +110,43 @@ export default function GlassButton({
   };
 
   const getSizeStyles = () => {
+    const isIOS = Platform.OS === "ios";
     switch (size) {
       case "small":
         return {
           paddingHorizontal: 16,
-          paddingVertical: 8,
+          paddingVertical: isIOS ? 10 : 8,
           borderRadius: 12,
-          fontSize: 14,
+          fontSize: isIOS ? 15 : 14,
           iconSize: 16,
+          minHeight: isIOS ? 44 : 36,
         };
       case "medium":
         return {
           paddingHorizontal: 24,
-          paddingVertical: 12,
+          paddingVertical: isIOS ? 14 : 12,
           borderRadius: 16,
-          fontSize: 16,
+          fontSize: isIOS ? 17 : 16,
           iconSize: 20,
+          minHeight: isIOS ? 44 : 40,
         };
       case "large":
         return {
           paddingHorizontal: 32,
-          paddingVertical: 16,
+          paddingVertical: isIOS ? 18 : 16,
           borderRadius: 20,
-          fontSize: 18,
+          fontSize: isIOS ? 19 : 18,
           iconSize: 24,
+          minHeight: isIOS ? 50 : 44,
         };
       default:
         return {
           paddingHorizontal: 24,
-          paddingVertical: 12,
+          paddingVertical: isIOS ? 14 : 12,
           borderRadius: 16,
-          fontSize: 16,
+          fontSize: isIOS ? 17 : 16,
           iconSize: 20,
+          minHeight: isIOS ? 44 : 40,
         };
     }
   };
@@ -188,6 +193,7 @@ export default function GlassButton({
           borderRadius: sizeStyles.borderRadius,
           paddingHorizontal: sizeStyles.paddingHorizontal,
           paddingVertical: sizeStyles.paddingVertical,
+          minHeight: sizeStyles.minHeight,
           borderWidth: 1,
           borderColor: variantStyles.borderColor,
           overflow: "hidden",
