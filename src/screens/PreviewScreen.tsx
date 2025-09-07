@@ -1,0 +1,192 @@
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  Pressable,
+  Alert,
+  Share,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RouteProp } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from "react-native-reanimated";
+import MarkdownDisplay from "react-native-markdown-display";
+
+import { RootStackParamList } from "../navigation/AppNavigator";
+import { cn } from "../utils/cn";
+
+type PreviewScreenNavigationProp = NativeStackNavigationProp<
+  RootStackParamList,
+  "Preview"
+>;
+
+type PreviewScreenRouteProp = RouteProp<RootStackParamList, "Preview">;
+
+interface Props {
+  navigation: PreviewScreenNavigationProp;
+  route: PreviewScreenRouteProp;
+}
+
+export default function PreviewScreen({ navigation, route }: Props) {
+  const { blogContent, topic } = route.params;
+  const [isCopying, setIsCopying] = useState(false);
+  
+  const copyButtonScale = useSharedValue(1);
+  const shareButtonScale = useSharedValue(1);
+
+  const copyAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: copyButtonScale.value }],
+  }));
+
+  const shareAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: shareButtonScale.value }],
+  }));
+
+  const handleCopy = async () => {
+    setIsCopying(true);
+    copyButtonScale.value = withSpring(0.95);
+    
+    try {
+      await Clipboard.setStringAsync(blogContent);
+      Alert.alert("Copied!", "Blog content has been copied to your clipboard.");
+    } catch (error) {
+      Alert.alert("Copy Failed", "Failed to copy content to clipboard.");
+    } finally {
+      setIsCopying(false);
+      copyButtonScale.value = withSpring(1);
+    }
+  };
+
+  const handleShare = async () => {
+    shareButtonScale.value = withSpring(0.95);
+    
+    try {
+      await Share.share({
+        message: `Check out this SEO blog post about "${topic}":\n\n${blogContent}`,
+        title: `SEO Blog: ${topic}`,
+      });
+    } catch (error) {
+      Alert.alert("Share Failed", "Failed to share content.");
+    } finally {
+      shareButtonScale.value = withSpring(1);
+    }
+  };
+
+  const markdownStyles = {
+    body: {
+      fontSize: 16,
+      lineHeight: 24,
+      color: "#374151",
+      fontFamily: "System",
+    },
+    heading1: {
+      fontSize: 28,
+      fontWeight: "700" as const,
+      color: "#111827",
+      marginBottom: 16,
+      marginTop: 24,
+    },
+    heading2: {
+      fontSize: 24,
+      fontWeight: "600" as const,
+      color: "#1f2937",
+      marginBottom: 12,
+      marginTop: 20,
+    },
+    heading3: {
+      fontSize: 20,
+      fontWeight: "600" as const,
+      color: "#374151",
+      marginBottom: 8,
+      marginTop: 16,
+    },
+    paragraph: {
+      marginBottom: 16,
+      lineHeight: 24,
+    },
+    strong: {
+      fontWeight: "600" as const,
+      color: "#111827",
+    },
+    em: {
+      fontStyle: "italic" as const,
+      color: "#4b5563",
+    },
+    list_item: {
+      marginBottom: 8,
+    },
+    bullet_list: {
+      marginBottom: 16,
+    },
+    ordered_list: {
+      marginBottom: 16,
+    },
+  };
+
+  return (
+    <SafeAreaView className="flex-1 bg-white">
+      <View className="flex-1">
+        {/* Header */}
+        <View className="px-6 py-4 border-b border-gray-100">
+          <Text className="text-sm text-gray-500 mb-1">Generated for:</Text>
+          <Text className="text-lg font-semibold text-gray-900" numberOfLines={2}>
+            {topic}
+          </Text>
+        </View>
+
+        {/* Content */}
+        <ScrollView className="flex-1 px-6 py-4">
+          <MarkdownDisplay style={markdownStyles}>
+            {blogContent}
+          </MarkdownDisplay>
+        </ScrollView>
+
+        {/* Action Buttons */}
+        <View className="px-6 py-4 border-t border-gray-100 bg-gray-50">
+          <View className="flex-row space-x-3">
+            <Animated.View style={[copyAnimatedStyle, { flex: 1 }]}>
+              <Pressable
+                onPress={handleCopy}
+                onPressIn={() => (copyButtonScale.value = withSpring(0.95))}
+                onPressOut={() => (copyButtonScale.value = withSpring(1))}
+                disabled={isCopying}
+                className={cn(
+                  "bg-blue-600 rounded-xl py-3 px-4 flex-row items-center justify-center",
+                  isCopying && "opacity-50"
+                )}
+              >
+                <Ionicons 
+                  name={isCopying ? "checkmark-outline" : "copy-outline"} 
+                  size={20} 
+                  color="white" 
+                />
+                <Text className="text-white font-semibold ml-2">
+                  {isCopying ? "Copied!" : "Copy"}
+                </Text>
+              </Pressable>
+            </Animated.View>
+
+            <Animated.View style={shareAnimatedStyle}>
+              <Pressable
+                onPress={handleShare}
+                onPressIn={() => (shareButtonScale.value = withSpring(0.95))}
+                onPressOut={() => (shareButtonScale.value = withSpring(1))}
+                className="bg-gray-600 rounded-xl py-3 px-4 flex-row items-center justify-center min-w-[100px]"
+              >
+                <Ionicons name="share-outline" size={20} color="white" />
+                <Text className="text-white font-semibold ml-2">Share</Text>
+              </Pressable>
+            </Animated.View>
+          </View>
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+}
