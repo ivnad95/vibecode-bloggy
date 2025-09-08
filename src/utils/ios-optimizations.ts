@@ -8,42 +8,42 @@ import { Platform } from "react-native";
 export const iOSHaptics = {
   light: () => {
     if (Platform.OS === "ios") {
-      import("expo-haptics").then(({ Haptics }) => {
+      import("expo-haptics").then((Haptics) => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       });
     }
   },
   medium: () => {
     if (Platform.OS === "ios") {
-      import("expo-haptics").then(({ Haptics }) => {
+      import("expo-haptics").then((Haptics) => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
       });
     }
   },
   heavy: () => {
     if (Platform.OS === "ios") {
-      import("expo-haptics").then(({ Haptics }) => {
+      import("expo-haptics").then((Haptics) => {
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
       });
     }
   },
   success: () => {
     if (Platform.OS === "ios") {
-      import("expo-haptics").then(({ Haptics }) => {
+      import("expo-haptics").then((Haptics) => {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       });
     }
   },
   warning: () => {
     if (Platform.OS === "ios") {
-      import("expo-haptics").then(({ Haptics }) => {
+      import("expo-haptics").then((Haptics) => {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
       });
     }
   },
   error: () => {
     if (Platform.OS === "ios") {
-      import("expo-haptics").then(({ Haptics }) => {
+      import("expo-haptics").then((Haptics) => {
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       });
     }

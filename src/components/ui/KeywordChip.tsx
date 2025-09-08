@@ -59,12 +59,12 @@ export default function KeywordChip({
       case "suggestion":
         return {
           container: {
-            backgroundColor: colors.success[50],
-            borderColor: colors.success[200],
+            backgroundColor: '#ecfdf5',
+            borderColor: '#bbf7d0',
             ...shadows.sm,
           },
-          text: colors.success[800],
-          metrics: colors.success[600],
+          text: '#166534',
+          metrics: '#059669',
         };
       default:
         return {
@@ -141,11 +141,11 @@ export default function KeywordChip({
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case "easy":
-        return colors.success[600];
+        return '#059669';
       case "medium":
-        return colors.warning[600];
+        return '#d97706';
       case "hard":
-        return colors.error[600];
+        return '#dc2626';
       default:
         return colors.text.secondary;
     }
@@ -154,7 +154,7 @@ export default function KeywordChip({
   const getVolumeColor = (volume: string) => {
     switch (volume) {
       case "high":
-        return colors.success[600];
+        return '#059669';
       case "medium":
         return colors.primary[600];
       case "low":

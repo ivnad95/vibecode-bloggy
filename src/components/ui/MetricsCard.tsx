@@ -33,21 +33,21 @@ export default function MetricsCard({
     switch (color) {
       case "green":
         return {
-          iconBg: colors.success[100],
-          iconColor: colors.success[600],
-          valueColor: colors.success[600],
+          iconBg: '#dcfce7',
+          iconColor: '#059669',
+          valueColor: '#059669',
         };
       case "yellow":
         return {
-          iconBg: colors.warning[100],
-          iconColor: colors.warning[600],
-          valueColor: colors.warning[600],
+          iconBg: '#fef3c7',
+          iconColor: '#d97706',
+          valueColor: '#d97706',
         };
       case "red":
         return {
-          iconBg: colors.error[100],
-          iconColor: colors.error[600],
-          valueColor: colors.error[600],
+          iconBg: '#fee2e2',
+          iconColor: '#dc2626',
+          valueColor: '#dc2626',
         };
       case "purple":
         return {
@@ -188,7 +188,7 @@ export default function MetricsCard({
                 <Ionicons
                   name={trend.isPositive ? "trending-up" : "trending-down"}
                   size={14}
-                  color={trend.isPositive ? colors.success[600] : colors.error[600]}
+                  color={trend.isPositive ? '#059669' : '#dc2626'}
                 />
                 <Text style={[
                   {
@@ -196,7 +196,7 @@ export default function MetricsCard({
                     fontFamily: typography.fontFamily.primary,
                     fontWeight: typography.fontWeight.medium,
                     marginLeft: spacing[1],
-                    color: trend.isPositive ? colors.success[600] : colors.error[600],
+                    color: trend.isPositive ? '#059669' : '#dc2626',
                   }
                 ]}>
                   {trend.isPositive ? "+" : ""}{trend.value}%

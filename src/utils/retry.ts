@@ -65,7 +65,7 @@ export class RetryService {
   ): Promise<RetryResult<T>> {
     const opts = { ...DEFAULT_OPTIONS, ...options };
     const startTime = Date.now();
-    let lastError: Error;
+    let lastError: Error = new Error('Unknown error');
 
     for (let attempt = 1; attempt <= opts.maxAttempts; attempt++) {
       try {

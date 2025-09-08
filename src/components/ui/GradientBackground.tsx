@@ -49,33 +49,33 @@ export default function GradientBackground({
     switch (variant) {
       case "primary":
         return [
-          colors.primary[600],
-          colors.primary[700],
-          colors.accent.purple,
+          '#2563eb',
+          '#1d4ed8',
+          '#8b5cf6',
         ];
       case "secondary":
         return [
-          colors.accent.yellow,
-          colors.accent.pink,
-          colors.accent.red,
+          '#f59e0b',
+          '#ec4899',
+          '#ef4444',
         ];
       case "accent":
         return [
-          colors.accent.green,
-          colors.accent.blue,
-          colors.accent.purple,
+          '#10b981',
+          '#3b82f6',
+          '#8b5cf6',
         ];
       case "neutral":
         return [
-          colors.background.secondary,
-          colors.background.tertiary,
-          colors.secondary[200],
+          '#f9fafb',
+          '#f3f4f6',
+          '#e2e8f0',
         ];
       default:
         return [
-          colors.primary[600],
-          colors.primary[700],
-          colors.accent.purple,
+          '#2563eb',
+          '#1d4ed8',
+          '#8b5cf6',
         ];
     }
   };
