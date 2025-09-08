@@ -218,13 +218,13 @@ export default function AnalyticsScreen() {
             automaticallyAdjustContentInsets={Platform.OS === "ios"}
             contentInsetAdjustmentBehavior={Platform.OS === "ios" ? "automatic" : undefined}
             contentContainerStyle={{ 
-              paddingBottom: Platform.OS === "ios" ? 120 : 100 
+              paddingBottom: Platform.OS === "ios" ? 140 : 120 
             }}
           >
           {/* Time Range Selector */}
-          <Animated.View entering={SlideInUp.delay(200)} className="px-6 mb-6">
+          <Animated.View entering={SlideInUp.delay(200)} className="px-6 mb-8">
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View className="flex-row space-x-2">
+              <View className="flex-row space-x-3">
                 {[
                   { key: "7d", label: "7 Days" },
                   { key: "30d", label: "30 Days" },
@@ -243,8 +243,8 @@ export default function AnalyticsScreen() {
           </Animated.View>
 
           {/* Key Metrics */}
-          <Animated.View entering={SlideInUp.delay(400)} className="mb-6">
-            <Text className="text-xl font-bold text-white mb-4 px-6">
+          <Animated.View entering={SlideInUp.delay(400)} className="mb-8">
+            <Text className="text-xl font-bold text-white mb-5 px-6">
               Key Metrics
             </Text>
             <ScrollView
@@ -253,7 +253,7 @@ export default function AnalyticsScreen() {
               contentContainerStyle={{ paddingHorizontal: 24, paddingRight: 48 }}
               className="mb-4"
             >
-              <View className="flex-row space-x-3">
+              <View className="flex-row space-x-4">
                 <View style={{ width: Math.max((width - 80) / 2.2, 160) }}>
                   <MetricsCard
                     title="Total Blogs"
@@ -306,7 +306,7 @@ export default function AnalyticsScreen() {
           </Animated.View>
 
           {/* Charts Section */}
-          <View className="px-6 space-y-6">
+          <View className="px-6 space-y-8">
             {/* SEO Score Trend */}
             <Animated.View entering={SlideInUp.delay(600)}>
               <ChartContainer
@@ -356,18 +356,18 @@ export default function AnalyticsScreen() {
             </Animated.View>
 
             {/* Performance Insights */}
-            <Animated.View entering={SlideInUp.delay(1400)} className="mb-12">
+            <Animated.View entering={SlideInUp.delay(1400)} className="mb-16">
               <GlassCard
                 intensity={20}
                 gradientColors={["rgba(255, 255, 255, 0.9)", "rgba(255, 255, 255, 0.7)"]}
                 borderRadius={16}
-                padding={20}
+                padding={24}
               >
-                <Text className="text-lg font-semibold text-gray-900 mb-4">
+                <Text className="text-lg font-semibold text-gray-900 mb-5">
                   Performance Insights
                 </Text>
                 
-                <View className="space-y-3">
+                <View className="space-y-4">
                   {metrics && (
                     <>
                       <View className="flex-row items-center">

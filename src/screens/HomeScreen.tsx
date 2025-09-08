@@ -435,11 +435,9 @@ export default function HomeScreen({ navigation }: Props) {
                 </GlassCard>
               </Animated.View>
 
-              {/* Action Buttons moved to sticky bottom bar */}
-
               {/* Features (collapsible) */}
-              <Animated.View entering={SlideInUp.delay(1200)} className="mt-4">
-                <Pressable onPress={() => setFeaturesExpanded((v) => !v)} className="flex-row items-center justify-between py-2">
+              <Animated.View entering={SlideInUp.delay(1200)}>
+                <Pressable onPress={() => setFeaturesExpanded((v) => !v)} className="flex-row items-center justify-between py-3 mb-2">
                   <Text 
                     style={{
                       fontSize: typography.fontSize.xl,
@@ -458,7 +456,7 @@ export default function HomeScreen({ navigation }: Props) {
                   </Animated.View>
                 </Pressable>
                 {featuresExpanded && (
-                  <Animated.View style={[featuresAnimatedStyle]} className="mt-2">
+                  <Animated.View style={[featuresAnimatedStyle]}>
                     <View className="flex-row flex-wrap justify-between">
                       {[
                         { icon: "document-text", title: "2500+ Words", desc: "Comprehensive content" },
@@ -500,41 +498,38 @@ export default function HomeScreen({ navigation }: Props) {
                 )}
               </Animated.View>
 
-              {/* Quick Actions (compact row) */}
-              <Animated.View entering={SlideInUp.delay(1400)} className="mt-6">
+              {/* Quick Actions */}
+              <Animated.View entering={SlideInUp.delay(1400)}>
                 <GlassCard
                   intensity={20}
                   gradientColors={["rgba(255, 255, 255, 0.1)", "rgba(255, 255, 255, 0.05)"]}
                   compact
                 >
-                  <View className="flex-row items-center justify-between mb-2">
+                  <View className="flex-row items-center justify-between mb-3">
                     <Text className="text-base font-semibold text-white">Quick Actions</Text>
                   </View>
-                  <Animated.ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    className="flex-row"
-                    contentContainerStyle={{ paddingVertical: 2 }}
-                  >
-                    <View style={{ marginRight: 12 }}>
+                  <View className="flex-row space-x-3">
+                    <View className="flex-1">
                       <GlassButton
                         title="History"
                         onPress={() => navigation.getParent()?.navigate("HistoryTab" as never)}
                         variant="ghost"
                         size="small"
                         icon="library-outline"
+                        fullWidth
                       />
                     </View>
-                    <View style={{ marginRight: 12 }}>
+                    <View className="flex-1">
                       <GlassButton
                         title="Analytics"
                         onPress={() => navigation.getParent()?.navigate("AnalyticsTab" as never)}
                         variant="ghost"
                         size="small"
                         icon="analytics-outline"
+                        fullWidth
                       />
                     </View>
-                  </Animated.ScrollView>
+                  </View>
                 </GlassCard>
               </Animated.View>
             </View>
@@ -564,14 +559,14 @@ export default function HomeScreen({ navigation }: Props) {
               style={{
                 paddingHorizontal: 24,
                 paddingBottom: Platform.OS === "ios" ? Math.max(insets.bottom, 20) : 12,
-                paddingTop: Platform.OS === "ios" ? 12 : 10,
+                paddingTop: Platform.OS === "ios" ? 16 : 12,
                 backgroundColor: Platform.OS === "ios" ? "transparent" : "rgba(255, 255, 255, 0.95)",
                 borderTopLeftRadius: Platform.OS === "ios" ? 20 : 0,
                 borderTopRightRadius: Platform.OS === "ios" ? 20 : 0,
               }}
             >
               {/* Connection status indicator */}
-              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
                 <View
                   style={{
                     width: 8,
@@ -585,8 +580,8 @@ export default function HomeScreen({ navigation }: Props) {
                   {isOnline ? `Online • ${quality.charAt(0).toUpperCase()}${quality.slice(1)}` : "Offline • queued tasks will run when back online"}
                 </Text>
               </View>
-              <View style={{ flexDirection: "row" }}>
-                <View style={{ flex: 1, marginRight: 10 }}>
+              <View style={{ flexDirection: "row", gap: 12 }}>
+                <View style={{ flex: 1 }}>
                   <GlassButton
                     title="🔍 Research & Generate"
                     onPress={handleResearch}

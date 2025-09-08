@@ -267,7 +267,7 @@ export default function HistoryScreen({ navigation }: Props) {
           >
             {/* Status Filter */}
             <View className="mb-4">
-              <Text className="text-sm font-semibold text-gray-700 mb-2">
+              <Text className="text-sm font-semibold text-gray-700 mb-3">
                 Status
               </Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -287,7 +287,7 @@ export default function HistoryScreen({ navigation }: Props) {
 
             {/* Sort Options */}
             <View className="mb-4">
-              <Text className="text-sm font-semibold text-gray-700 mb-2">
+              <Text className="text-sm font-semibold text-gray-700 mb-3">
                 Sort by
               </Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -391,7 +391,6 @@ export default function HistoryScreen({ navigation }: Props) {
                     <Animated.View
                       key={blog.id}
                       entering={SlideInUp.delay(900 + index * 100)}
-                      className="mb-3"
                     >
                       <BlogCard
                         blog={blog}

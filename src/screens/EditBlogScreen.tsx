@@ -451,7 +451,7 @@ export default function EditBlogScreen({ navigation, route }: Props) {
             className="flex-1"
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
-            contentContainerStyle={{ paddingBottom: 120 }}
+            contentContainerStyle={{ paddingBottom: 140 }}
           >
             <View className="px-6 space-y-6">
               {/* SEO Analysis Panel */}
@@ -478,7 +478,7 @@ export default function EditBlogScreen({ navigation, route }: Props) {
                       </View>
                     </View>
 
-                    <View className="flex-row space-x-4 mb-4">
+                    <View className="flex-row space-x-3 mb-4">
                       <View style={{ width: (width - 120) / 3 }}>
                         <MetricsCard
                           title="Readability"
@@ -679,7 +679,7 @@ export default function EditBlogScreen({ navigation, route }: Props) {
               </Animated.View>
 
               {/* Content Editor */}
-              <Animated.View entering={SlideInUp.delay(800)} className="mb-12">
+              <Animated.View entering={SlideInUp.delay(800)} className="mb-8">
                 <GlassCard
                   intensity={25}
                   gradientColors={["rgba(255, 255, 255, 0.25)", "rgba(255, 255, 255, 0.1)"]}

@@ -384,7 +384,7 @@ export default function SettingsScreen() {
     return (
       <View
         key={item.id}
-        className={`flex-row items-center justify-between py-4 ${
+        className={`flex-row items-center justify-between py-5 ${
           item.destructive ? "opacity-80" : ""
         }`}
       >
@@ -465,10 +465,10 @@ export default function SettingsScreen() {
           automaticallyAdjustContentInsets={Platform.OS === "ios"}
           contentInsetAdjustmentBehavior={Platform.OS === "ios" ? "automatic" : undefined}
           contentContainerStyle={{ 
-            paddingBottom: Platform.OS === "ios" ? 120 : 100 
+            paddingBottom: Platform.OS === "ios" ? 140 : 120 
           }}
         >
-          <View className="px-6 space-y-6">
+          <View className="px-6 space-y-8">
             {/* App Stats */}
             <Animated.View entering={SlideInUp.delay(200)}>
               <GlassCard
@@ -477,7 +477,7 @@ export default function SettingsScreen() {
                 borderRadius={16}
                 padding={20}
               >
-                <Text className="text-lg font-bold text-gray-900 mb-4">
+                <Text className="text-lg font-bold text-gray-900 mb-5">
                   Your Stats
                 </Text>
                 
@@ -524,16 +524,16 @@ export default function SettingsScreen() {
                   borderRadius={16}
                   padding={20}
                 >
-                  <Text className="text-lg font-bold text-gray-900 mb-4">
+                  <Text className="text-lg font-bold text-gray-900 mb-5">
                     {section.title}
                   </Text>
                   
-                  <View className="space-y-2">
+                  <View className="space-y-3">
                     {section.items.map((item, index) => (
                       <View key={item.id}>
                         {renderSettingItem(item)}
                         {index < section.items.length - 1 && (
-                          <View className="h-px bg-gray-200/50 ml-14 my-2" />
+                          <View className="h-px bg-gray-200/50 ml-14 my-3" />
                         )}
                       </View>
                     ))}
@@ -543,7 +543,7 @@ export default function SettingsScreen() {
             ))}
 
             {/* Footer */}
-            <Animated.View entering={FadeIn.delay(800)} className="pb-12">
+            <Animated.View entering={FadeIn.delay(800)} className="pb-16">
               <Text className="text-center text-gray-500 text-sm leading-relaxed px-4">
                 SEO Blog Generator helps you create high-quality, optimized content that ranks well in search engines.
                 {"\n\n"}

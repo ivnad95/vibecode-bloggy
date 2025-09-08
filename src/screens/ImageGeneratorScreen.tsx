@@ -219,9 +219,9 @@ export default function ImageGeneratorScreen({ route }: Props) {
           className="flex-1"
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
-          contentContainerStyle={{ paddingBottom: 100 }}
+          contentContainerStyle={{ paddingBottom: 120 }}
         >
-          <View className="px-6 space-y-6">
+          <View className="px-6 space-y-8">
             {/* Image Prompt */}
             <Animated.View entering={SlideInUp.delay(300)}>
               <GlassInput
@@ -244,11 +244,11 @@ export default function ImageGeneratorScreen({ route }: Props) {
                 borderRadius={16}
                 padding={16}
               >
-                <Text className="text-lg font-semibold text-white mb-3">
+                <Text className="text-lg font-semibold text-white mb-4">
                   Prompt Suggestions
                 </Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <View className="flex-row space-x-3">
+                  <View className="flex-row space-x-4">
                     {promptSuggestions.map((suggestion, index) => (
                       <Pressable
                         key={index}
@@ -273,15 +273,15 @@ export default function ImageGeneratorScreen({ route }: Props) {
                 borderRadius={16}
                 padding={16}
               >
-                <Text className="text-lg font-semibold text-white mb-3">
+                <Text className="text-lg font-semibold text-white mb-4">
                   Image Style
                 </Text>
-                <View className="flex-row flex-wrap">
+                <View className="flex-row flex-wrap gap-2">
                   {imageStyles.map((style) => (
                     <Pressable
                       key={style.key}
                       onPress={() => setSelectedStyle(style.key)}
-                      className={`rounded-lg px-3 py-2 mr-2 mb-2 ${
+                      className={`rounded-lg px-3 py-2 ${
                         selectedStyle === style.key
                           ? "bg-blue-500/50 border border-blue-300"
                           : "bg-white/20"
@@ -307,10 +307,10 @@ export default function ImageGeneratorScreen({ route }: Props) {
                 borderRadius={16}
                 padding={16}
               >
-                <Text className="text-lg font-semibold text-white mb-3">
+                <Text className="text-lg font-semibold text-white mb-4">
                   Image Size
                 </Text>
-                <View className="space-y-2">
+                <View className="space-y-3">
                   {imageSizes.map((size) => (
                     <Pressable
                       key={size.key}
@@ -383,7 +383,7 @@ export default function ImageGeneratorScreen({ route }: Props) {
                   borderRadius={16}
                   padding={16}
                 >
-                  <Text className="text-lg font-bold text-gray-900 mb-3">
+                  <Text className="text-lg font-bold text-gray-900 mb-4">
                     Generated Image
                   </Text>
                   
@@ -394,13 +394,13 @@ export default function ImageGeneratorScreen({ route }: Props) {
                         width: "100%",
                         height: 240,
                         borderRadius: 12,
-                        marginBottom: 12,
+                        marginBottom: 16,
                       }}
                       resizeMode="cover"
                     />
                   </Animated.View>
                   
-                  <View className="space-y-2 mb-4">
+                  <View className="space-y-3 mb-5">
                     <Text className="text-gray-700 text-sm">
                       <Text className="font-semibold">Prompt:</Text> {selectedImage.prompt}
                     </Text>
@@ -412,7 +412,7 @@ export default function ImageGeneratorScreen({ route }: Props) {
                     </Text>
                   </View>
 
-                  <View className="flex-row space-x-2">
+                  <View className="flex-row space-x-3">
                     <View className="flex-1">
                       <GlassButton
                         title="Copy Prompt"
@@ -447,7 +447,7 @@ export default function ImageGeneratorScreen({ route }: Props) {
                   borderRadius={16}
                   padding={16}
                 >
-                  <Text className="text-lg font-semibold text-white mb-3">
+                  <Text className="text-lg font-semibold text-white mb-4">
                     Recent Images ({generatedImages.length})
                   </Text>
                   
@@ -456,7 +456,7 @@ export default function ImageGeneratorScreen({ route }: Props) {
                     showsHorizontalScrollIndicator={false}
                     contentContainerStyle={{ paddingRight: 24 }}
                   >
-                    <View className="flex-row space-x-3">
+                    <View className="flex-row space-x-4">
                       {generatedImages.map((image, index) => (
                         <Animated.View
                           key={image.id}
@@ -495,11 +495,11 @@ export default function ImageGeneratorScreen({ route }: Props) {
                 borderRadius={16}
                 padding={16}
               >
-                <Text className="text-lg font-semibold text-gray-900 mb-3">
+                <Text className="text-lg font-semibold text-gray-900 mb-4">
                   💡 Tips for Better Images
                 </Text>
                 
-                <View className="space-y-2">
+                <View className="space-y-3">
                   <Text className="text-gray-700 text-sm">
                     • Be specific about colors, mood, and composition
                   </Text>

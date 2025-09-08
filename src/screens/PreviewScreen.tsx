@@ -136,8 +136,8 @@ export default function PreviewScreen({ navigation, route }: Props) {
     <SafeAreaView className="flex-1 bg-white">
       <View className="flex-1">
         {/* Header */}
-        <View className="px-6 py-4 border-b border-gray-100">
-          <Text className="text-sm text-gray-500 mb-1">Generated for:</Text>
+        <View className="px-6 py-5 border-b border-gray-100">
+          <Text className="text-sm text-gray-500 mb-2">Generated for:</Text>
           <Text className="text-lg font-semibold text-gray-900" numberOfLines={2}>
             {topic}
           </Text>
@@ -145,13 +145,14 @@ export default function PreviewScreen({ navigation, route }: Props) {
 
         {/* Content */}
         <ScrollView 
-          className="flex-1 px-6 py-4"
+          className="flex-1 px-6 py-5"
           automaticallyAdjustContentInsets={Platform.OS === "ios"}
           contentInsetAdjustmentBehavior={Platform.OS === "ios" ? "automatic" : undefined}
           showsVerticalScrollIndicator={Platform.OS !== "ios"}
+          contentContainerStyle={{ paddingBottom: 20 }}
         >
           {banner && (
-            <View className="mb-3">
+            <View className="mb-4">
               <InlineBanner type={banner.type} message={banner.message} />
             </View>
           )}
@@ -161,8 +162,8 @@ export default function PreviewScreen({ navigation, route }: Props) {
         </ScrollView>
 
         {/* Action Buttons */}
-        <View className="px-6 py-4 border-t border-gray-100 bg-gray-50">
-          <View className="flex-row space-x-3">
+        <View className="px-6 py-5 border-t border-gray-100 bg-gray-50">
+          <View className="flex-row space-x-4">
             <Animated.View style={[copyAnimatedStyle, { flex: 1 }]}>
               <Pressable
                 onPress={handleCopy}

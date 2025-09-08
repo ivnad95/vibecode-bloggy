@@ -219,7 +219,7 @@ export default function ResearchScreen({ navigation, route }: Props) {
           }
           showsVerticalScrollIndicator={false}
           className="flex-1"
-          contentContainerStyle={{ paddingBottom: 100 }}
+          contentContainerStyle={{ paddingBottom: 120 }}
         >
           <View className="px-6 space-y-6">
             {/* Overview Metrics */}
@@ -538,7 +538,7 @@ export default function ResearchScreen({ navigation, route }: Props) {
 
             {/* Action Buttons */}
             <Animated.View entering={SlideInUp.delay(900)} className="pb-8">
-              <View className="space-y-3">
+              <View className="space-y-4">
                 <GlassButton
                   title="Generate Blog with This Research"
                   onPress={handleGenerateBlog}
