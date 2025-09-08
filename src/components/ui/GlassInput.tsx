@@ -18,6 +18,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { cn } from "../../utils/cn";
+import { colors, typography, spacing, borderRadius, shadows, accessibility } from "../../styles/design-system";
 
 interface GlassInputProps extends Omit<TextInputProps, "style"> {
   label?: string;
@@ -61,7 +62,7 @@ export default function GlassInput({
 
   const animatedContainerStyle = useAnimatedStyle(() => ({
     borderColor: withTiming(
-      borderAnimation.value > 0 ? "rgba(59, 130, 246, 0.6)" : "rgba(255, 255, 255, 0.2)",
+      borderAnimation.value > 0 ? colors.primary[500] : colors.glass.border,
       { duration: 200 }
     ),
     shadowOpacity: withTiming(glowAnimation.value * 0.3, { duration: 200 }),
@@ -83,7 +84,7 @@ export default function GlassInput({
           },
         ],
         color: withTiming(
-          focusAnimation.value > 0 ? "#3b82f6" : "#6b7280",
+          focusAnimation.value > 0 ? colors.primary[500] : colors.text.tertiary,
           { duration: 200 }
         ),
       };
@@ -111,38 +112,37 @@ export default function GlassInput({
   };
 
   const getSizeStyles = () => {
-    const isIOS = Platform.OS === "ios";
     switch (size) {
       case "small":
         return {
-          height: isIOS ? 44 : 40,
-          paddingHorizontal: 12,
-          fontSize: isIOS ? 15 : 14,
-          borderRadius: 12,
+          height: accessibility.minTouchTarget,
+          paddingHorizontal: spacing[3],
+          fontSize: typography.fontSize.sm,
+          borderRadius: borderRadius.md,
           iconSize: 16,
         };
       case "medium":
         return {
-          height: isIOS ? 50 : 48,
-          paddingHorizontal: 16,
-          fontSize: isIOS ? 17 : 16,
-          borderRadius: 16,
+          height: accessibility.minTouchTarget + 4,
+          paddingHorizontal: spacing[4],
+          fontSize: typography.fontSize.base,
+          borderRadius: borderRadius.lg,
           iconSize: 20,
         };
       case "large":
         return {
-          height: isIOS ? 56 : 56,
-          paddingHorizontal: 20,
-          fontSize: isIOS ? 19 : 18,
-          borderRadius: 20,
+          height: accessibility.minTouchTarget + 12,
+          paddingHorizontal: spacing[5],
+          fontSize: typography.fontSize.lg,
+          borderRadius: borderRadius.xl,
           iconSize: 24,
         };
       default:
         return {
-          height: isIOS ? 50 : 48,
-          paddingHorizontal: 16,
-          fontSize: isIOS ? 17 : 16,
-          borderRadius: 16,
+          height: accessibility.minTouchTarget + 4,
+          paddingHorizontal: spacing[4],
+          fontSize: typography.fontSize.base,
+          borderRadius: borderRadius.lg,
           iconSize: 20,
         };
     }
@@ -159,11 +159,9 @@ export default function GlassInput({
           minHeight: textInputProps.multiline ? sizeStyles.height : undefined,
           borderRadius: sizeStyles.borderRadius,
           borderWidth: 1,
+          backgroundColor: colors.background.glass,
           overflow: "hidden",
-          shadowColor: "#3b82f6",
-          shadowOffset: { width: 0, height: 2 },
-          shadowRadius: 8,
-          elevation: 2,
+          ...shadows.base,
         },
         containerStyle,
       ]}
@@ -212,8 +210,8 @@ export default function GlassInput({
           <Ionicons
             name={leftIcon}
             size={sizeStyles.iconSize}
-            color="#6b7280"
-            style={{ marginRight: 12 }}
+            color={colors.text.tertiary}
+            style={{ marginRight: spacing[3] }}
           />
         )}
 
@@ -227,13 +225,14 @@ export default function GlassInput({
             {
               flex: 1,
               fontSize: sizeStyles.fontSize,
-              color: "#1f2937",
+              color: colors.text.primary,
+              fontFamily: typography.fontFamily.primary,
               paddingVertical: textInputProps.multiline ? 4 : 0,
               textAlignVertical: textInputProps.multiline ? "top" : "center",
             },
             inputStyle,
           ]}
-          placeholderTextColor="#9ca3af"
+          placeholderTextColor={colors.text.tertiary}
         />
 
         {/* Floating Label */}
@@ -260,8 +259,8 @@ export default function GlassInput({
           <Ionicons
             name={rightIcon}
             size={sizeStyles.iconSize}
-            color="#6b7280"
-            style={{ marginLeft: 12 }}
+            color={colors.text.tertiary}
+            style={{ marginLeft: spacing[3] }}
             onPress={onRightIconPress}
           />
         )}
@@ -276,10 +275,11 @@ export default function GlassInput({
         {error && (
           <Text
             style={{
-              color: "#ef4444",
-              fontSize: 12,
-              marginTop: 4,
-              marginLeft: 4,
+              color: colors.status.error,
+              fontSize: typography.fontSize.xs,
+              fontFamily: typography.fontFamily.primary,
+              marginTop: spacing[1],
+              marginLeft: spacing[1],
             }}
           >
             {error}
@@ -296,10 +296,11 @@ export default function GlassInput({
         <Text
           style={[
             {
-              fontSize: 14,
-              fontWeight: "600",
-              color: "#374151",
-              marginBottom: 8,
+              fontSize: typography.fontSize.sm,
+              fontWeight: typography.fontWeight.semibold,
+              color: colors.text.primary,
+              fontFamily: typography.fontFamily.primary,
+              marginBottom: spacing[2],
             },
             labelStyle,
           ]}
@@ -314,10 +315,11 @@ export default function GlassInput({
       {error && (
         <Text
           style={{
-            color: "#ef4444",
-            fontSize: 12,
-            marginTop: 4,
-            marginLeft: 4,
+            color: colors.status.error,
+            fontSize: typography.fontSize.xs,
+            fontFamily: typography.fontFamily.primary,
+            marginTop: spacing[1],
+            marginLeft: spacing[1],
           }}
         >
           {error}

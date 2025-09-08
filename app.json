@@ -1,17 +1,81 @@
 {
   "expo": {
-    "name": "vibecode",
-    "slug": "vibecode",
+    "name": "SEO Blog Generator",
+    "slug": "vibecode-bloggy",
     "scheme": "vibecode",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#667eea"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.vibecode.bloggy",
+      "buildNumber": "1",
+      "infoPlist": {
+        "UIBackgroundModes": ["background-fetch", "background-processing"],
+        "NSCameraUsageDescription": "This app uses the camera to capture images for blog content generation.",
+        "NSPhotoLibraryUsageDescription": "This app accesses your photo library to select images for blog content.",
+        "NSMicrophoneUsageDescription": "This app uses the microphone to record audio for transcription and blog content generation.",
+        "NSLocationWhenInUseUsageDescription": "This app uses location to provide location-based content suggestions.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.vibecode.bloggy",
+      "versionCode": 1,
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-asset",
+      "expo-build-properties",
+      "expo-font",
+      "expo-mail-composer",
+      "expo-secure-store",
+      "expo-sqlite",
+      "expo-video",
+      "expo-web-browser",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "newArchEnabled": true,
+            "deploymentTarget": "15.1"
+          },
+          "android": {
+            "newArchEnabled": true,
+            "minSdkVersion": 23,
+            "targetSdkVersion": 34
+          }
+        }
+      ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "vibecode-bloggy"
+      }
     }
   }
 }

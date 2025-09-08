@@ -8,6 +8,7 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import { cn } from "../../utils/cn";
+import { colors, shadows, borderRadius, spacing } from "../../styles/design-system";
 
 interface GlassCardProps {
   children: React.ReactNode;
@@ -79,7 +80,9 @@ export default function GlassCard({
           padding: resolvedPadding,
           overflow: "hidden",
           borderWidth: 1,
-          borderColor: "rgba(255, 255, 255, 0.2)",
+          borderColor: colors.glass.border,
+          backgroundColor: colors.background.glass,
+          ...shadows.md,
         },
         style,
       ]}

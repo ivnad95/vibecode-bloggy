@@ -1,4 +1,5 @@
 import { getOpenAIClient } from "./openai";
+import { retryOpenAICall } from "../utils/retry";
 
 export interface SEOKeyword {
   keyword: string;
@@ -123,7 +124,7 @@ Please analyze and provide:
 Format your response as a detailed JSON object that matches the TypeScript interfaces. Be specific and actionable in your recommendations. Focus on 2024-2025 SEO best practices including E-E-A-T, user experience signals, and semantic search optimization.`;
 
     try {
-      const response = await client.chat.completions.create({
+      const response = await retryOpenAICall(() => client.chat.completions.create({
         model: "gpt-4o-2024-11-20",
         messages: [
           {
@@ -137,7 +138,7 @@ Format your response as a detailed JSON object that matches the TypeScript inter
         ],
         max_tokens: 4000,
         temperature: 0.3,
-      });
+      }));
   
       const content = response.choices[0]?.message?.content;
       if (!content) {
@@ -300,7 +301,7 @@ Create:
 Format as JSON matching the TypeScript interface.`;
 
   try {
-    const response = await client.chat.completions.create({
+    const response = await retryOpenAICall(() => client.chat.completions.create({
       model: "gpt-4o-2024-11-20",
       messages: [
         {
@@ -314,7 +315,7 @@ Format as JSON matching the TypeScript interface.`;
       ],
       max_tokens: 2000,
       temperature: 0.3,
-    });
+    }));
 
     const content = response.choices[0]?.message?.content;
     if (!content) {

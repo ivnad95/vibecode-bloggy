@@ -25,9 +25,11 @@ import Animated, {
 import { HomeStackParamList } from "../navigation/AppNavigator";
 import { generateEnhancedSEOBlog } from "../api/blog-generator";
 import { conductSEOResearch, SEOResearchData } from "../api/seo-research";
+import { networkService, NetworkError, useNetworkState } from "../utils/network";
 import useBlogStore from "../state/blogStore";
 import useSEOStore from "../state/seoStore";
 import useHistoryStore from "../state/historyStore";
+import { colors, typography, spacing, shadows } from "../styles/design-system";
 
 // UI Components
 import GradientBackground from "../components/ui/GradientBackground";
@@ -90,7 +92,8 @@ export default function HomeScreen({ navigation }: Props) {
   } = useBlogStore();
   
   const { addResearch, getCachedResearch } = useSEOStore();
-  const { addBlog } = useHistoryStore();
+  const { addBlog, enqueueTask } = useHistoryStore();
+  const { isOnline, quality } = useNetworkState();
 
   // Animations
   const scrollY = useSharedValue(0);
@@ -137,6 +140,27 @@ export default function HomeScreen({ navigation }: Props) {
     setIsResearching(true);
     setCurrentTopic(topic.trim());
 
+    // Ensure we are online before making network requests
+    if (!networkService.isOnline()) {
+      setIsResearching(false);
+      setModalTitle("No Internet");
+      setModalMessage("You can queue this research + generation task. It will run automatically when you're back online.");
+      setModalActions([
+        { label: "Cancel", onPress: () => setModalVisible(false), variant: "secondary" },
+        { label: "Queue for later", variant: "primary", onPress: () => {
+            enqueueTask({ topic: topic.trim(), withResearch: true, options: { contentType: "guide", tone: "conversational", includeFAQ: true, includeSchema: true, wordCount: 2500 } });
+            setModalVisible(false);
+            setModalTitle("Queued");
+            setModalMessage("Your task has been added to the offline queue.");
+            setModalActions([{ label: "OK", onPress: () => setModalVisible(false), variant: "primary" }]);
+            setModalVisible(true);
+          }
+        },
+      ]);
+      setModalVisible(true);
+      return;
+    }
+
     try {
       // Check cache first
       const cached = getCachedResearch(topic.trim());
@@ -156,7 +180,11 @@ export default function HomeScreen({ navigation }: Props) {
       // Navigate to research screen
       navigation.navigate("Research", { topic: topic.trim() });
     } catch (error) {
-      showModal("Research Failed", "Failed to conduct SEO research. Please try again.");
+      if ((error as NetworkError).isNetworkError) {
+        showModal("Network Error", "Unable to reach the server. Please check your connection and retry.");
+      } else {
+        showModal("Research Failed", "Failed to conduct SEO research. Please try again.");
+      }
     } finally {
       setIsResearching(false);
     }
@@ -171,6 +199,28 @@ export default function HomeScreen({ navigation }: Props) {
 
     setIsGenerating(true);
     cardScale.value = withSpring(0.98);
+
+    // Ensure we are online before making network requests
+    if (!networkService.isOnline()) {
+      setIsGenerating(false);
+      cardScale.value = withSpring(1);
+      setModalTitle("No Internet");
+      setModalMessage("You can queue this quick generation task. It will run automatically when you're back online.");
+      setModalActions([
+        { label: "Cancel", onPress: () => setModalVisible(false), variant: "secondary" },
+        { label: "Queue for later", variant: "primary", onPress: () => {
+            enqueueTask({ topic: topic.trim(), withResearch: false, options: { contentType: "guide", tone: "conversational", includeFAQ: true, includeSchema: true, wordCount: 2500 } });
+            setModalVisible(false);
+            setModalTitle("Queued");
+            setModalMessage("Your task has been added to the offline queue.");
+            setModalActions([{ label: "OK", onPress: () => setModalVisible(false), variant: "primary" }]);
+            setModalVisible(true);
+          }
+        },
+      ]);
+      setModalVisible(true);
+      return;
+    }
 
     try {
       const blogData = await generateEnhancedSEOBlog({
@@ -212,7 +262,11 @@ export default function HomeScreen({ navigation }: Props) {
         researchId: researchData ? "current" : undefined,
       });
     } catch (error) {
-      showModal("Generation Failed", "Failed to generate blog content. Please try again.");
+      if ((error as NetworkError).isNetworkError) {
+        showModal("Network Error", "Unable to reach the server. Please check your connection and retry.");
+      } else {
+        showModal("Generation Failed", "Failed to generate blog content. Please try again.");
+      }
     } finally {
       setIsGenerating(false);
       cardScale.value = withSpring(1);
@@ -257,6 +311,21 @@ export default function HomeScreen({ navigation }: Props) {
               style={headerAnimatedStyle}
               className="px-6 pt-4 pb-2"
             >
+              {/* Connection status indicator */}
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+                <View
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    marginRight: 8,
+                    backgroundColor: !isOnline ? "#ef4444" : quality === "excellent" ? "#10b981" : quality === "good" ? "#f59e0b" : "#f97316",
+                  }}
+                />
+                <Text style={{ color: colors.text.secondary, fontSize: 12 }}>
+                  {isOnline ? `Online • ${quality.charAt(0).toUpperCase()}${quality.slice(1)}` : "Offline • queued tasks will run when back online"}
+                </Text>
+              </View>
               <View className="items-center mb-4">
                 <Animated.View
                   entering={SlideInUp.delay(400)}
@@ -272,11 +341,17 @@ export default function HomeScreen({ navigation }: Props) {
                 
                 <Animated.Text
                   entering={SlideInUp.delay(600)}
-                  className="text-3xl font-semibold text-white text-center mb-3"
+                  className="text-3xl font-semibold text-center mb-3"
                   style={{
-                    fontSize: Platform.OS === "ios" ? 28 : 32,
-                    lineHeight: Platform.OS === "ios" ? 34 : 38,
-                    letterSpacing: Platform.OS === "ios" ? -0.5 : 0,
+                    fontSize: typography.fontSize['4xl'],
+                    lineHeight: typography.lineHeight.tight,
+                    letterSpacing: typography.letterSpacing.tight,
+                    color: colors.text.inverse,
+                    fontFamily: typography.fontFamily.primary,
+                    fontWeight: typography.fontWeight.bold,
+                    textShadowColor: colors.glass.shadow,
+                    textShadowOffset: { width: 0, height: 2 },
+                    textShadowRadius: 4,
                   }}
                 >
                   SEO Blog Generator
@@ -285,11 +360,17 @@ export default function HomeScreen({ navigation }: Props) {
                 <Animated.Text
                   entering={SlideInUp.delay(800)}
                   numberOfLines={2}
-                  className="text-base text-white/90 text-center px-4"
+                  className="text-center px-4"
                   style={{
-                    fontSize: Platform.OS === "ios" ? 17 : 16,
-                    lineHeight: Platform.OS === "ios" ? 24 : 22,
-                    letterSpacing: Platform.OS === "ios" ? -0.2 : 0,
+                    fontSize: typography.fontSize.lg,
+                    lineHeight: typography.lineHeight.normal,
+                    letterSpacing: typography.letterSpacing.tight,
+                    color: colors.text.inverseSecondary,
+                    fontFamily: typography.fontFamily.primary,
+                    fontWeight: typography.fontWeight.medium,
+                    textShadowColor: colors.glass.shadow,
+                    textShadowOffset: { width: 0, height: 1 },
+                    textShadowRadius: 2,
                   }}
                 >
                   Create high-ranking, traffic-driving blog posts with AI-powered SEO research and optimization
@@ -307,11 +388,17 @@ export default function HomeScreen({ navigation }: Props) {
                   className="mb-6"
                 >
                   <Text 
-                    className="text-xl font-bold text-white mb-4"
+                    className="mb-4"
                     style={{
-                      fontSize: Platform.OS === "ios" ? 22 : 20,
-                      lineHeight: Platform.OS === "ios" ? 28 : 24,
-                      letterSpacing: Platform.OS === "ios" ? -0.3 : 0,
+                      fontSize: typography.fontSize['2xl'],
+                      lineHeight: typography.lineHeight.tight,
+                      letterSpacing: typography.letterSpacing.tight,
+                      color: colors.text.inverse,
+                      fontFamily: typography.fontFamily.primary,
+                      fontWeight: typography.fontWeight.bold,
+                      textShadowColor: colors.glass.shadow,
+                      textShadowOffset: { width: 0, height: 1 },
+                      textShadowRadius: 2,
                     }}
                   >
                     What's your blog topic?
@@ -329,7 +416,19 @@ export default function HomeScreen({ navigation }: Props) {
                     className="mb-4"
                   />
                   
-                  <Text className="text-sm text-white/70 leading-relaxed">
+                  <Text 
+                    className="leading-relaxed"
+                    style={{
+                      fontSize: typography.fontSize.sm,
+                      lineHeight: typography.lineHeight.relaxed,
+                      color: colors.text.inverseTertiary,
+                      fontFamily: typography.fontFamily.primary,
+                      fontWeight: typography.fontWeight.normal,
+                      textShadowColor: colors.glass.shadow,
+                      textShadowOffset: { width: 0, height: 1 },
+                      textShadowRadius: 1,
+                    }}
+                  >
                     💡 Be specific about your target audience and main keywords for better SEO results. 
                     The more detailed your topic, the more targeted your content will be.
                   </Text>
@@ -341,9 +440,21 @@ export default function HomeScreen({ navigation }: Props) {
               {/* Features (collapsible) */}
               <Animated.View entering={SlideInUp.delay(1200)} className="mt-4">
                 <Pressable onPress={() => setFeaturesExpanded((v) => !v)} className="flex-row items-center justify-between py-2">
-                  <Text className="text-xl font-bold text-white">What you get</Text>
+                  <Text 
+                    style={{
+                      fontSize: typography.fontSize.xl,
+                      color: colors.text.inverse,
+                      fontFamily: typography.fontFamily.primary,
+                      fontWeight: typography.fontWeight.bold,
+                      textShadowColor: colors.glass.shadow,
+                      textShadowOffset: { width: 0, height: 1 },
+                      textShadowRadius: 2,
+                    }}
+                  >
+                    What you get
+                  </Text>
                   <Animated.View style={chevronStyle}>
-                    <Ionicons name="chevron-forward" size={20} color="white" />
+                    <Ionicons name="chevron-forward" size={20} color={colors.text.inverse} />
                   </Animated.View>
                 </Pressable>
                 {featuresExpanded && (
@@ -459,6 +570,21 @@ export default function HomeScreen({ navigation }: Props) {
                 borderTopRightRadius: Platform.OS === "ios" ? 20 : 0,
               }}
             >
+              {/* Connection status indicator */}
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 8 }}>
+                <View
+                  style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: 4,
+                    marginRight: 8,
+                    backgroundColor: !isOnline ? "#ef4444" : quality === "excellent" ? "#10b981" : quality === "good" ? "#f59e0b" : "#f97316",
+                  }}
+                />
+                <Text style={{ color: colors.text.secondary, fontSize: 12 }}>
+                  {isOnline ? `Online • ${quality.charAt(0).toUpperCase()}${quality.slice(1)}` : "Offline • queued tasks will run when back online"}
+                </Text>
+              </View>
               <View style={{ flexDirection: "row" }}>
                 <View style={{ flex: 1, marginRight: 10 }}>
                   <GlassButton

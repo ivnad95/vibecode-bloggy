@@ -5,6 +5,7 @@ import Animated, { FadeIn } from "react-native-reanimated";
 
 import GlassCard from "./GlassCard";
 import { cn } from "../../utils/cn";
+import { colors, typography, spacing, borderRadius, shadows } from "../../styles/design-system";
 
 interface MetricsCardProps {
   title: string;
@@ -32,33 +33,33 @@ export default function MetricsCard({
     switch (color) {
       case "green":
         return {
-          iconBg: "bg-green-100",
-          iconColor: "#10b981",
-          valueColor: "text-green-600",
+          iconBg: colors.success[100],
+          iconColor: colors.success[600],
+          valueColor: colors.success[600],
         };
       case "yellow":
         return {
-          iconBg: "bg-yellow-100",
-          iconColor: "#f59e0b",
-          valueColor: "text-yellow-600",
+          iconBg: colors.warning[100],
+          iconColor: colors.warning[600],
+          valueColor: colors.warning[600],
         };
       case "red":
         return {
-          iconBg: "bg-red-100",
-          iconColor: "#ef4444",
-          valueColor: "text-red-600",
+          iconBg: colors.error[100],
+          iconColor: colors.error[600],
+          valueColor: colors.error[600],
         };
       case "purple":
         return {
-          iconBg: "bg-purple-100",
-          iconColor: "#8b5cf6",
-          valueColor: "text-purple-600",
+          iconBg: colors.accent.purple + "20",
+          iconColor: colors.accent.purple,
+          valueColor: colors.accent.purple,
         };
       default:
         return {
-          iconBg: "bg-blue-100",
-          iconColor: "#3b82f6",
-          valueColor: "text-blue-600",
+          iconBg: colors.primary[100],
+          iconColor: colors.primary[600],
+          valueColor: colors.primary[600],
         };
     }
   };
@@ -67,27 +68,63 @@ export default function MetricsCard({
     switch (size) {
       case "small":
         return {
-          padding: 12,
+          padding: spacing[3],
           iconSize: 20,
-          titleSize: "text-sm",
-          valueSize: "text-lg",
-          subtitleSize: "text-xs",
+          titleSize: {
+            fontSize: typography.fontSize.sm,
+            fontFamily: typography.fontFamily.primary,
+            fontWeight: typography.fontWeight.medium,
+          },
+          valueSize: {
+            fontSize: typography.fontSize.lg,
+            fontFamily: typography.fontFamily.primary,
+            fontWeight: typography.fontWeight.bold,
+          },
+          subtitleSize: {
+            fontSize: typography.fontSize.xs,
+            fontFamily: typography.fontFamily.primary,
+            fontWeight: typography.fontWeight.normal,
+          },
         };
       case "large":
         return {
-          padding: 20,
+          padding: spacing[5],
           iconSize: 28,
-          titleSize: "text-lg",
-          valueSize: "text-3xl",
-          subtitleSize: "text-sm",
+          titleSize: {
+            fontSize: typography.fontSize.lg,
+            fontFamily: typography.fontFamily.primary,
+            fontWeight: typography.fontWeight.medium,
+          },
+          valueSize: {
+            fontSize: typography.fontSize['3xl'],
+            fontFamily: typography.fontFamily.primary,
+            fontWeight: typography.fontWeight.bold,
+          },
+          subtitleSize: {
+            fontSize: typography.fontSize.sm,
+            fontFamily: typography.fontFamily.primary,
+            fontWeight: typography.fontWeight.normal,
+          },
         };
       default:
         return {
-          padding: 16,
+          padding: spacing[4],
           iconSize: 24,
-          titleSize: "text-base",
-          valueSize: "text-2xl",
-          subtitleSize: "text-sm",
+          titleSize: {
+            fontSize: typography.fontSize.base,
+            fontFamily: typography.fontFamily.primary,
+            fontWeight: typography.fontWeight.medium,
+          },
+          valueSize: {
+            fontSize: typography.fontSize['2xl'],
+            fontFamily: typography.fontFamily.primary,
+            fontWeight: typography.fontWeight.bold,
+          },
+          subtitleSize: {
+            fontSize: typography.fontSize.sm,
+            fontFamily: typography.fontFamily.primary,
+            fontWeight: typography.fontWeight.normal,
+          },
         };
     }
   };
@@ -99,43 +136,69 @@ export default function MetricsCard({
     <Animated.View entering={FadeIn}>
       <GlassCard
         intensity={20}
-        gradientColors={["rgba(255, 255, 255, 0.9)", "rgba(255, 255, 255, 0.7)"]}
-        borderRadius={16}
+        gradientColors={[colors.background.glass, colors.background.glass + "B3"]}
+        borderRadius={borderRadius.xl}
         padding={sizeClasses.padding}
       >
-        <View className="flex-row items-start justify-between">
-          <View className="flex-1">
+        <View style={{
+          flexDirection: "row",
+          alignItems: "flex-start",
+          justifyContent: "space-between",
+        }}>
+          <View style={{ flex: 1 }}>
             {/* Title */}
-            <Text className={cn("font-medium text-gray-600 mb-2", sizeClasses.titleSize)}>
+            <Text style={[
+              sizeClasses.titleSize,
+              { 
+                color: colors.text.secondary,
+                marginBottom: spacing[2],
+              }
+            ]}>
               {title}
             </Text>
 
             {/* Value */}
-            <Text className={cn("font-bold mb-1", colorClasses.valueColor, sizeClasses.valueSize)}>
+            <Text style={[
+              sizeClasses.valueSize,
+              { 
+                color: colorClasses.valueColor,
+                marginBottom: spacing[1],
+              }
+            ]}>
               {typeof value === "number" ? value.toLocaleString() : value}
             </Text>
 
             {/* Subtitle */}
             {subtitle && (
-              <Text className={cn("text-gray-500", sizeClasses.subtitleSize)}>
+              <Text style={[
+                sizeClasses.subtitleSize,
+                { color: colors.text.tertiary }
+              ]}>
                 {subtitle}
               </Text>
             )}
 
             {/* Trend */}
             {trend && (
-              <View className="flex-row items-center mt-2">
+              <View style={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginTop: spacing[2],
+              }}>
                 <Ionicons
                   name={trend.isPositive ? "trending-up" : "trending-down"}
                   size={14}
-                  color={trend.isPositive ? "#10b981" : "#ef4444"}
+                  color={trend.isPositive ? colors.success[600] : colors.error[600]}
                 />
-                <Text
-                  className={cn(
-                    "text-xs font-medium ml-1",
-                    trend.isPositive ? "text-green-600" : "text-red-600"
-                  )}
-                >
+                <Text style={[
+                  {
+                    fontSize: typography.fontSize.xs,
+                    fontFamily: typography.fontFamily.primary,
+                    fontWeight: typography.fontWeight.medium,
+                    marginLeft: spacing[1],
+                    color: trend.isPositive ? colors.success[600] : colors.error[600],
+                  }
+                ]}>
                   {trend.isPositive ? "+" : ""}{trend.value}%
                 </Text>
               </View>
@@ -143,7 +206,11 @@ export default function MetricsCard({
           </View>
 
           {/* Icon */}
-          <View className={cn("rounded-xl p-3", colorClasses.iconBg)}>
+          <View style={{
+            borderRadius: borderRadius.xl,
+            padding: spacing[3],
+            backgroundColor: colorClasses.iconBg,
+          }}>
             <Ionicons
               name={icon}
               size={sizeClasses.iconSize}

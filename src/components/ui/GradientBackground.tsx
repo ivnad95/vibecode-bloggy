@@ -8,6 +8,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { cn } from "../../utils/cn";
+import { colors } from "../../styles/design-system";
 
 interface GradientBackgroundProps {
   children: React.ReactNode;
@@ -48,33 +49,33 @@ export default function GradientBackground({
     switch (variant) {
       case "primary":
         return [
-          "#667eea",
-          "#764ba2",
-          "#f093fb",
+          colors.primary[600],
+          colors.primary[700],
+          colors.accent.purple,
         ];
       case "secondary":
         return [
-          "#ffecd2",
-          "#fcb69f",
-          "#ff9a9e",
+          colors.accent.yellow,
+          colors.accent.pink,
+          colors.accent.red,
         ];
       case "accent":
         return [
-          "#a8edea",
-          "#fed6e3",
-          "#d299c2",
+          colors.accent.green,
+          colors.accent.blue,
+          colors.accent.purple,
         ];
       case "neutral":
         return [
-          "#f7f8fc",
-          "#eef1f5",
-          "#e2e8f0",
+          colors.background.secondary,
+          colors.background.tertiary,
+          colors.secondary[200],
         ];
       default:
         return [
-          "#667eea",
-          "#764ba2",
-          "#f093fb",
+          colors.primary[600],
+          colors.primary[700],
+          colors.accent.purple,
         ];
     }
   };

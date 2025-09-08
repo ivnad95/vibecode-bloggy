@@ -10,6 +10,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { cn } from "../../utils/cn";
+import { colors, typography, spacing, borderRadius, shadows, accessibility } from "../../styles/design-system";
 
 interface GlassButtonProps {
   title: string;
@@ -80,73 +81,76 @@ export default function GlassButton({
     switch (variant) {
       case "primary":
         return {
-          gradientColors: gradientColors || ["rgba(59, 130, 246, 0.8)", "rgba(147, 51, 234, 0.8)"],
-          borderColor: "rgba(255, 255, 255, 0.3)",
-          textColor: "#ffffff",
-          shadowColor: "#3b82f6",
+          gradientColors: gradientColors || [colors.primary[600], colors.primary[700]],
+          borderColor: colors.glass.border,
+          textColor: colors.text.inverse,
+          shadowColor: colors.primary[600],
+          backgroundColor: colors.primary[600],
         };
       case "secondary":
         return {
-          gradientColors: gradientColors || ["rgba(255, 255, 255, 0.2)", "rgba(255, 255, 255, 0.1)"],
-          borderColor: "rgba(255, 255, 255, 0.2)",
-          textColor: "#1f2937",
-          shadowColor: "#ffffff",
+          gradientColors: gradientColors || [colors.glass.light, colors.glass.medium],
+          borderColor: colors.glass.border,
+          textColor: colors.text.primary,
+          shadowColor: colors.glass.shadow,
+          backgroundColor: colors.background.glass,
         };
       case "ghost":
         return {
-          gradientColors: gradientColors || ["rgba(255, 255, 255, 0.05)", "rgba(255, 255, 255, 0.02)"],
-          borderColor: "rgba(255, 255, 255, 0.1)",
-          textColor: "#6b7280",
-          shadowColor: "#ffffff",
+          gradientColors: gradientColors || [colors.glass.dark, "transparent"],
+          borderColor: colors.glass.border,
+          textColor: colors.text.tertiary,
+          shadowColor: colors.glass.shadow,
+          backgroundColor: "transparent",
         };
       default:
         return {
-          gradientColors: gradientColors || ["rgba(59, 130, 246, 0.8)", "rgba(147, 51, 234, 0.8)"],
-          borderColor: "rgba(255, 255, 255, 0.3)",
-          textColor: "#ffffff",
-          shadowColor: "#3b82f6",
+          gradientColors: gradientColors || [colors.primary[600], colors.primary[700]],
+          borderColor: colors.glass.border,
+          textColor: colors.text.inverse,
+          shadowColor: colors.primary[600],
+          backgroundColor: colors.primary[600],
         };
     }
   };
 
   const getSizeStyles = () => {
-    const isIOS = Platform.OS === "ios";
     switch (size) {
       case "small":
         return {
-          paddingHorizontal: 16,
-          paddingVertical: isIOS ? 10 : 8,
-          borderRadius: 12,
-          fontSize: isIOS ? 15 : 14,
+          paddingHorizontal: spacing[4],
+          paddingVertical: spacing[2],
+          borderRadius: borderRadius.md,
+          fontSize: typography.fontSize.sm,
           iconSize: 16,
-          minHeight: isIOS ? 44 : 36,
+          minHeight: accessibility.minTouchTarget,
         };
       case "medium":
         return {
-          paddingHorizontal: 24,
-          paddingVertical: isIOS ? 14 : 12,
-          borderRadius: 16,
-          fontSize: isIOS ? 17 : 16,
+          paddingHorizontal: spacing[6],
+          paddingVertical: spacing[3],
+          borderRadius: borderRadius.lg,
+          fontSize: typography.fontSize.base,
           iconSize: 20,
-          minHeight: isIOS ? 44 : 40,
+          minHeight: accessibility.minTouchTarget,
         };
       case "large":
         return {
-          paddingHorizontal: 32,
-          paddingVertical: isIOS ? 18 : 16,
-          borderRadius: 20,
-          fontSize: isIOS ? 19 : 18,
+          paddingHorizontal: spacing[8],
+          paddingVertical: spacing[4],
+          borderRadius: borderRadius.xl,
+          fontSize: typography.fontSize.lg,
           iconSize: 24,
-          minHeight: isIOS ? 50 : 44,
+          minHeight: accessibility.minTouchTarget + 8,
         };
       default:
         return {
-          paddingHorizontal: 24,
-          paddingVertical: isIOS ? 14 : 12,
-          borderRadius: 16,
-          fontSize: isIOS ? 17 : 16,
+          paddingHorizontal: spacing[6],
+          paddingVertical: spacing[3],
+          borderRadius: borderRadius.lg,
+          fontSize: typography.fontSize.base,
           iconSize: 20,
-          minHeight: isIOS ? 44 : 40,
+          minHeight: accessibility.minTouchTarget,
         };
     }
   };
@@ -196,10 +200,12 @@ export default function GlassButton({
           minHeight: sizeStyles.minHeight,
           borderWidth: 1,
           borderColor: variantStyles.borderColor,
+          backgroundColor: variantStyles.backgroundColor,
           overflow: "hidden",
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "center",
+          ...shadows.base,
         }}
       >
         {/* Blur Background */}
@@ -258,8 +264,9 @@ export default function GlassButton({
               style={[
                 {
                   fontSize: sizeStyles.fontSize,
-                  fontWeight: "600",
+                  fontWeight: typography.fontWeight.semibold,
                   color: variantStyles.textColor,
+                  fontFamily: typography.fontFamily.primary,
                 },
                 textStyle,
               ]}

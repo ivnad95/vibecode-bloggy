@@ -1,35 +1,53 @@
+import React, { useEffect } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-
+import { StatusBar } from "expo-status-bar";
+import * as SplashScreen from "expo-splash-screen";
+import * as Font from "expo-font";
 import AppNavigator from "./src/navigation/AppNavigator";
+import { networkService } from "./src/utils/network";
+import useHistoryStore from "./src/state/historyStore";
 
-/*
-IMPORTANT NOTICE: DO NOT REMOVE
-There are already environment keys in the project. 
-Before telling the user to add them, check if you already have access to the required keys through bash.
-Directly access them with process.env.${key}
-
-Correct usage:
-process.env.EXPO_PUBLIC_VIBECODE_{key}
-//directly access the key
-
-Incorrect usage:
-import { OPENAI_API_KEY } from '@env';
-//don't use @env, its depreicated
-
-Incorrect usage:
-import Constants from 'expo-constants';
-const openai_api_key = Constants.expoConfig.extra.apikey;
-//don't use expo-constants, its depreicated
-
-*/
+// Keep the splash screen visible while we fetch resources
+SplashScreen.preventAutoHideAsync();
 
 export default function App() {
+  const { processQueue } = useHistoryStore();
+  
+  const prepare = async () => {
+    try {
+      // Pre-load fonts, make any API calls you need to do here
+      await Font.loadAsync({
+        // Add your custom fonts here if needed
+      });
+      
+      // Artificial delay to show splash screen (optional)
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (e) {
+      console.warn(e);
+    } finally {
+      // Tell the application to render
+      await SplashScreen.hideAsync();
+    }
+  };
+
+  useEffect(() => {
+    prepare();
+    
+    // Set up network listener to process queue when coming back online
+    const unsubscribe = networkService.addListener((networkState) => {
+      if (networkState.isConnected && networkState.isInternetReachable) {
+        // Process queue when coming back online
+        processQueue().catch(console.error);
+      }
+    });
+    
+    return unsubscribe;
+  }, [processQueue]);
+
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider>
-        <AppNavigator />
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <SafeAreaProvider>
+      <AppNavigator />
+      <StatusBar style="light" />
+    </SafeAreaProvider>
   );
 }

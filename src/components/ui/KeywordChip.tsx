@@ -9,6 +9,7 @@ import Animated, {
 
 import { SEOKeyword } from "../../api/seo-research";
 import { cn } from "../../utils/cn";
+import { colors, typography, spacing, borderRadius, shadows } from "../../styles/design-system";
 
 interface KeywordChipProps {
   keyword: SEOKeyword;
@@ -47,21 +48,33 @@ export default function KeywordChip({
     switch (variant) {
       case "selected":
         return {
-          container: "bg-blue-600 border-blue-600",
-          text: "text-white",
-          metrics: "text-blue-100",
+          container: {
+            backgroundColor: colors.primary[600],
+            borderColor: colors.primary[600],
+            ...shadows.md,
+          },
+          text: colors.text.inverse,
+          metrics: colors.primary[100],
         };
       case "suggestion":
         return {
-          container: "bg-green-50 border-green-200",
-          text: "text-green-800",
-          metrics: "text-green-600",
+          container: {
+            backgroundColor: colors.success[50],
+            borderColor: colors.success[200],
+            ...shadows.sm,
+          },
+          text: colors.success[800],
+          metrics: colors.success[600],
         };
       default:
         return {
-          container: "bg-gray-50 border-gray-200",
-          text: "text-gray-800",
-          metrics: "text-gray-600",
+          container: {
+            backgroundColor: colors.background.glass,
+            borderColor: colors.glass.border,
+            ...shadows.sm,
+          },
+          text: colors.text.primary,
+          metrics: colors.text.secondary,
         };
     }
   };
@@ -70,23 +83,56 @@ export default function KeywordChip({
     switch (size) {
       case "small":
         return {
-          padding: "px-2 py-1",
-          text: "text-xs",
-          metrics: "text-xs",
+          padding: {
+            paddingHorizontal: spacing[2],
+            paddingVertical: spacing[1],
+          },
+          text: {
+            fontSize: typography.fontSize.xs,
+            fontFamily: typography.fontFamily.primary,
+            fontWeight: typography.fontWeight.medium,
+          },
+          metrics: {
+            fontSize: typography.fontSize.xs,
+            fontFamily: typography.fontFamily.primary,
+            fontWeight: typography.fontWeight.normal,
+          },
           icon: 12,
         };
       case "large":
         return {
-          padding: "px-4 py-3",
-          text: "text-base",
-          metrics: "text-sm",
+          padding: {
+            paddingHorizontal: spacing[4],
+            paddingVertical: spacing[3],
+          },
+          text: {
+            fontSize: typography.fontSize.base,
+            fontFamily: typography.fontFamily.primary,
+            fontWeight: typography.fontWeight.medium,
+          },
+          metrics: {
+            fontSize: typography.fontSize.sm,
+            fontFamily: typography.fontFamily.primary,
+            fontWeight: typography.fontWeight.normal,
+          },
           icon: 18,
         };
       default:
         return {
-          padding: "px-3 py-2",
-          text: "text-sm",
-          metrics: "text-xs",
+          padding: {
+            paddingHorizontal: spacing[3],
+            paddingVertical: spacing[2],
+          },
+          text: {
+            fontSize: typography.fontSize.sm,
+            fontFamily: typography.fontFamily.primary,
+            fontWeight: typography.fontWeight.medium,
+          },
+          metrics: {
+            fontSize: typography.fontSize.xs,
+            fontFamily: typography.fontFamily.primary,
+            fontWeight: typography.fontWeight.normal,
+          },
           icon: 14,
         };
     }
@@ -95,26 +141,26 @@ export default function KeywordChip({
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
       case "easy":
-        return "text-green-600";
+        return colors.success[600];
       case "medium":
-        return "text-yellow-600";
+        return colors.warning[600];
       case "hard":
-        return "text-red-600";
+        return colors.error[600];
       default:
-        return "text-gray-600";
+        return colors.text.secondary;
     }
   };
 
   const getVolumeColor = (volume: string) => {
     switch (volume) {
       case "high":
-        return "text-green-600";
+        return colors.success[600];
       case "medium":
-        return "text-blue-600";
+        return colors.primary[600];
       case "low":
-        return "text-gray-600";
+        return colors.text.secondary;
       default:
-        return "text-gray-600";
+        return colors.text.secondary;
     }
   };
 
@@ -122,36 +168,64 @@ export default function KeywordChip({
   const sizeStyles = getSizeStyles();
 
   const ChipContent = () => (
-    <View className={cn(
-      "flex-row items-center rounded-lg border",
-      sizeStyles.padding,
-      variantStyles.container
-    )}>
-      <View className="flex-1">
-        <Text className={cn("font-medium", sizeStyles.text, variantStyles.text)}>
+    <View style={[
+      {
+        flexDirection: "row",
+        alignItems: "center",
+        borderRadius: borderRadius.lg,
+        borderWidth: 1,
+        ...sizeStyles.padding,
+        ...variantStyles.container,
+      }
+    ]}>
+      <View style={{ flex: 1 }}>
+        <Text style={[
+          sizeStyles.text,
+          { color: variantStyles.text }
+        ]}>
           {keyword.keyword}
         </Text>
         
         {showMetrics && (
-          <View className="flex-row items-center mt-1 space-x-2">
-            <View className="flex-row items-center">
-              <Text className={cn(sizeStyles.metrics, getDifficultyColor(keyword.difficulty))}>
+          <View style={{
+            flexDirection: "row",
+            alignItems: "center",
+            marginTop: spacing[1],
+            gap: spacing[2],
+          }}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={[
+                sizeStyles.metrics,
+                { color: getDifficultyColor(keyword.difficulty) }
+              ]}>
                 {keyword.difficulty}
               </Text>
             </View>
             
-            <Text className={cn(sizeStyles.metrics, variantStyles.metrics)}>•</Text>
+            <Text style={[
+              sizeStyles.metrics,
+              { color: variantStyles.metrics }
+            ]}>•</Text>
             
-            <View className="flex-row items-center">
-              <Text className={cn(sizeStyles.metrics, getVolumeColor(keyword.searchVolume))}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={[
+                sizeStyles.metrics,
+                { color: getVolumeColor(keyword.searchVolume) }
+              ]}>
                 {keyword.searchVolume} vol
               </Text>
             </View>
             
-            <Text className={cn(sizeStyles.metrics, variantStyles.metrics)}>•</Text>
+            <Text style={[
+              sizeStyles.metrics,
+              { color: variantStyles.metrics }
+            ]}>•</Text>
             
-            <View className="flex-row items-center">
-              <Text className={cn(sizeStyles.metrics, variantStyles.metrics)}>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <Text style={[
+                sizeStyles.metrics,
+                { color: variantStyles.metrics }
+              ]}>
                 {keyword.relevanceScore}%
               </Text>
             </View>
@@ -162,13 +236,16 @@ export default function KeywordChip({
       {onRemove && (
         <Pressable
           onPress={onRemove}
-          className="ml-2 p-1"
+          style={{
+            marginLeft: spacing[2],
+            padding: spacing[1],
+          }}
           hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
         >
           <Ionicons
             name="close"
             size={sizeStyles.icon}
-            color={variant === "selected" ? "white" : "#6b7280"}
+            color={variant === "selected" ? colors.text.inverse : colors.text.secondary}
           />
         </Pressable>
       )}

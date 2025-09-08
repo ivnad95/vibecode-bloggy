@@ -1,5 +1,6 @@
 import { getOpenAIClient } from "./openai";
 import { SEOResearchData } from "./seo-research";
+import { retryOpenAICall } from "../utils/retry";
 
 export interface BlogGenerationOptions {
   topic: string;
@@ -213,7 +214,9 @@ Return a JSON object with the following structure:
 Focus on creating content that genuinely helps users while satisfying search engine requirements. Prioritize user value over keyword density.`;
 
   const task = (async () => {
-    const response = await client.chat.completions.create({
+    // Dynamically calculate max_tokens based on the requested wordCount.
+    const maxTokens = Math.min(Math.max(wordCount * 2, 4000), 16000);
+    const response = await retryOpenAICall(() => client.chat.completions.create({
       model: "gpt-4o-2024-11-20",
       messages: [
         {
@@ -226,9 +229,9 @@ Focus on creating content that genuinely helps users while satisfying search eng
           content: prompt,
         },
       ],
-      max_tokens: 4000,
+      max_tokens: maxTokens,
       temperature: 0.7,
-    });
+    }));
 
     const content = response.choices[0]?.message?.content;
     if (!content) {
