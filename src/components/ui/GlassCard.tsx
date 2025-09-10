@@ -42,24 +42,20 @@ export default function GlassCard({
   compact = false,
 }: GlassCardProps) {
   const scale = useSharedValue(1);
-  const opacity = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
-    opacity: opacity.value,
   }));
 
   const handlePressIn = () => {
     if (pressable) {
       scale.value = withSpring(0.98);
-      opacity.value = withSpring(0.8);
     }
   };
 
   const handlePressOut = () => {
     if (pressable) {
       scale.value = withSpring(1);
-      opacity.value = withSpring(1);
     }
   };
 

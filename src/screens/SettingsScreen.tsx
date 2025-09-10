@@ -76,10 +76,12 @@ export default function SettingsScreen() {
   });
 
   const headerAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: interpolate(scrollY.value, [0, 100], [1, 0.9], "clamp"),
     transform: [
       {
         translateY: interpolate(scrollY.value, [0, 100], [0, -10], "clamp"),
+      },
+      {
+        scale: interpolate(scrollY.value, [0, 100], [1, 0.995], "clamp"),
       },
     ],
   }));

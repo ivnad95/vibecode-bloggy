@@ -18,6 +18,7 @@ import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withTiming,
+  interpolate,
 } from "react-native-reanimated";
 
 import { HomeStackParamList } from "../navigation/AppNavigator";
@@ -83,11 +84,17 @@ export default function EditBlogScreen({ navigation, route }: Props) {
   };
 
   // Animations
-  const seoOpacity = useSharedValue(0);
+  const seoProgress = useSharedValue(0);
 
-  const seoAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: seoOpacity.value,
-  }));
+  const seoAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        { translateY: interpolate(seoProgress.value, [0, 1], [8, 0]) },
+        { scale: 0.98 + 0.02 * seoProgress.value },
+      ],
+      opacity: 0.999, // keep a stable opacity to avoid layout-animation conflicts while visually unchanged
+    };
+  });
 
   // Load blog data
   useEffect(() => {
@@ -207,7 +214,7 @@ export default function EditBlogScreen({ navigation, route }: Props) {
     setCurrentAnalysis(quickAnalysis);
     if (!showSEOPanel && score < 70) {
       setShowSEOPanel(true);
-      seoOpacity.value = withTiming(1, { duration: 300 });
+      seoProgress.value = withTiming(1, { duration: 300 });
     }
   };
 
@@ -313,8 +320,8 @@ export default function EditBlogScreen({ navigation, route }: Props) {
 
       setSeoAnalysis(analysis);
       setCurrentAnalysis(analysis);
-      setShowSEOPanel(true);
-      seoOpacity.value = withTiming(1, { duration: 300 });
+  setShowSEOPanel(true);
+  seoProgress.value = withTiming(1, { duration: 300 });
     } catch (error) {
       showModal("Analysis Failed", "Failed to analyze SEO. Please try again.", "destructive");
     } finally {

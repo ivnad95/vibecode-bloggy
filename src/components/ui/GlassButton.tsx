@@ -48,13 +48,12 @@ export default function GlassButton({
   intensity = 25,
   gradientColors,
 }: GlassButtonProps) {
+
   const scale = useSharedValue(1);
-  const opacity = useSharedValue(1);
   const glowOpacity = useSharedValue(0);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
-    opacity: opacity.value,
   }));
 
   const glowStyle = useAnimatedStyle(() => ({
@@ -64,7 +63,6 @@ export default function GlassButton({
   const handlePressIn = () => {
     if (!disabled && !loading) {
       scale.value = withSpring(0.96);
-      opacity.value = withTiming(0.8, { duration: 100 });
       glowOpacity.value = withTiming(0.6, { duration: 100 });
     }
   };
@@ -72,7 +70,6 @@ export default function GlassButton({
   const handlePressOut = () => {
     if (!disabled && !loading) {
       scale.value = withSpring(1);
-      opacity.value = withTiming(1, { duration: 150 });
       glowOpacity.value = withTiming(0, { duration: 150 });
     }
   };

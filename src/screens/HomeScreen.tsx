@@ -78,7 +78,15 @@ export default function HomeScreen({ navigation }: Props) {
     transform: [{ rotate: `${expand.value * 90}deg` }],
   }));
   const featuresAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: expand.value,
+    // Avoid animating "opacity" here because layout animations can overwrite it
+    transform: [
+      {
+        translateY: interpolate(expand.value, [0, 1], [8, 0]),
+      },
+      {
+        scale: 0.98 + expand.value * 0.02,
+      },
+    ],
   }));
   
   // Zustand stores
@@ -113,7 +121,6 @@ export default function HomeScreen({ navigation }: Props) {
   }, []);
 
   const headerAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: headerOpacity.value,
     transform: [
       {
         translateY: interpolate(
@@ -409,11 +416,12 @@ export default function HomeScreen({ navigation }: Props) {
                     onChangeText={setTopic}
                     placeholder="e.g., Best productivity apps for remote workers"
                     multiline
-                    numberOfLines={3}
+                    numberOfLines={2}
                     variant="floating"
                     label="Blog Topic"
                     leftIcon="bulb-outline"
                     className="mb-4"
+                    size="small"
                   />
                   
                   <Text 

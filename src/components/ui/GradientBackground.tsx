@@ -6,6 +6,7 @@ import Animated, {
   useSharedValue,
   withRepeat,
   withTiming,
+  interpolate,
 } from "react-native-reanimated";
 import { cn } from "../../utils/cn";
 import { colors } from "../../styles/design-system";
@@ -96,10 +97,12 @@ export default function GradientBackground({
   const animatedStyle = useAnimatedStyle(() => {
     if (!animated) return {};
 
+    const t = animationProgress.value;
+    const translateY = interpolate(t, [0, 0.5, 1], [0, -6, 0]);
+    const scale = 1 + 0.01 * Math.sin(t * Math.PI * 2);
+
     return {
-      opacity: withTiming(0.8 + 0.2 * Math.sin(animationProgress.value * Math.PI * 2), {
-        duration: 100,
-      }),
+      transform: [{ translateY }, { scale }],
     };
   });
 
