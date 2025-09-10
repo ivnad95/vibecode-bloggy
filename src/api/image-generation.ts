@@ -7,6 +7,7 @@ Does not support video and audio generation.
 */
 
 import { logger } from "../utils/logger";
+import { networkService } from "../utils/network";
 
 // API endpoint configuration
 const baseUrl = "https://api.vibecodeapp.com";
@@ -28,6 +29,10 @@ export async function generateImage(
   }
 ): Promise<string> {
   try {
+    if (!(await networkService.checkConnectivity())) {
+      throw networkService.createNetworkError("No internet connection available");
+    }
+
     // Create request body
     const requestBody = {
       projectId: process.env.EXPO_PUBLIC_VIBECODE_PROJECT_ID,
@@ -42,6 +47,7 @@ export async function generateImage(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${process.env.EXPO_PUBLIC_VIBECODE_API_TOKEN}`,
       },
       body: JSON.stringify(requestBody),
     });

@@ -1,6 +1,8 @@
-import { getOpenAIClient } from "./openai";
+import { openAIChat } from "./openai";
 import { retryOpenAICall } from "../utils/retry";
 import { logger } from "../utils/logger";
+import { LRUCache } from "../utils/lru-cache";
+import { sanitizeInput, validatePromptLength } from "../utils/sanitize";
 
 export interface SEOKeyword {
   keyword: string;
@@ -49,7 +51,7 @@ export interface SEOResearchData {
 
 // In-memory cache and request coalescing to minimize API calls
 const RESEARCH_TTL_MS = 24 * 60 * 60 * 1000; // 24h
-const researchCacheMem = new Map<string, { data: SEOResearchData; expiresAt: number }>();
+const researchCacheMem = new LRUCache<string, { data: SEOResearchData; expiresAt: number }>(50);
 const inFlightResearch = new Map<string, Promise<SEOResearchData>>();
 
 function normalizeTopic(t: string) {
@@ -57,8 +59,9 @@ function normalizeTopic(t: string) {
 }
 
 export async function conductSEOResearch(topic: string): Promise<SEOResearchData> {
-  const client = getOpenAIClient();
-  const key = normalizeTopic(topic);
+  const sanitizedTopic = sanitizeInput(topic);
+  validatePromptLength(sanitizedTopic);
+  const key = normalizeTopic(sanitizedTopic);
 
   // Memory cache check
   const cached = researchCacheMem.get(key);
@@ -125,23 +128,21 @@ Please analyze and provide:
 Format your response as a detailed JSON object that matches the TypeScript interfaces. Be specific and actionable in your recommendations. Focus on 2024-2025 SEO best practices including E-E-A-T, user experience signals, and semantic search optimization.`;
 
     try {
-      const response = await retryOpenAICall(() => client.chat.completions.create({
-        model: "gpt-4o-2024-11-20",
-        messages: [
-          {
-            role: "system",
-            content: "You are an expert SEO researcher who provides comprehensive, actionable SEO insights based on current Google algorithm requirements and best practices. Always respond with valid JSON that matches the requested TypeScript interfaces."
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        max_tokens: 4000,
-        temperature: 0.3,
-      }));
-  
-      const content = response.choices[0]?.message?.content;
+      const response = await retryOpenAICall(() =>
+        openAIChat(
+          [
+            {
+              role: "system",
+              content:
+                "You are an expert SEO researcher who provides comprehensive, actionable SEO insights based on current Google algorithm requirements and best practices. Always respond with valid JSON that matches the requested TypeScript interfaces.",
+            },
+            { role: "user", content: prompt },
+          ],
+          { model: "gpt-4o-2024-11-20", maxTokens: 4000, temperature: 0.3 },
+        ),
+      );
+
+      const content = response.content;
       if (!content) {
         throw new Error("No SEO research data generated");
       }
@@ -158,7 +159,7 @@ Format your response as a detailed JSON object that matches the TypeScript inter
       } catch (parseError) {
         logger.error("Failed to parse SEO research JSON:", parseError);
         // Return fallback data structure
-        return createFallbackSEOData(topic);
+        return createFallbackSEOData(sanitizedTopic);
       }
     } catch (error) {
       logger.error("Error conducting SEO research:", error);
@@ -265,7 +266,7 @@ function createFallbackSEOData(topic: string): SEOResearchData {
 }
 
 export async function generateContentOutline(
-  topic: string, 
+  topic: string,
   researchData: SEOResearchData
 ): Promise<{
   title: string;
@@ -282,9 +283,10 @@ export async function generateContentOutline(
   }>;
   callToAction: string;
 }> {
-  const client = getOpenAIClient();
-  
-  const prompt = `Based on the SEO research data, create a comprehensive content outline for: "${topic}"
+  const sanitizedTopic = sanitizeInput(topic);
+  validatePromptLength(sanitizedTopic);
+
+  const prompt = `Based on the SEO research data, create a comprehensive content outline for: "${sanitizedTopic}"
 
 SEO Research Data:
 - Primary Keywords: ${researchData.primaryKeywords.map(k => k.keyword).join(", ")}
@@ -302,23 +304,20 @@ Create:
 Format as JSON matching the TypeScript interface.`;
 
   try {
-    const response = await retryOpenAICall(() => client.chat.completions.create({
-      model: "gpt-4o-2024-11-20",
-      messages: [
-        {
-          role: "system",
-          content: "You are an expert content strategist who creates SEO-optimized content outlines. Always respond with valid JSON."
-        },
-        {
-          role: "user",
-          content: prompt
-        }
-      ],
-      max_tokens: 2000,
-      temperature: 0.3,
-    }));
+    const response = await retryOpenAICall(() =>
+      openAIChat(
+        [
+          {
+            role: "system",
+            content: "You are an expert content strategist who creates SEO-optimized content outlines. Always respond with valid JSON.",
+          },
+          { role: "user", content: prompt },
+        ],
+        { model: "gpt-4o-2024-11-20", maxTokens: 2000, temperature: 0.3 },
+      ),
+    );
 
-    const content = response.choices[0]?.message?.content;
+    const content = response.content;
     if (!content) {
       throw new Error("No content outline generated");
     }

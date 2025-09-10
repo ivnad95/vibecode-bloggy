@@ -1,4 +1,4 @@
-import { describe, expect, test, afterEach } from "bun:test";
+import { describe, expect, test, afterEach } from "vitest";
 
 // Because logger module resolves env vars at runtime, we can import once.
 import { logger } from "./logger";

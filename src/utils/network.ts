@@ -1,3 +1,4 @@
+import React from 'react';
 import NetInfo, { NetInfoState, NetInfoStateType } from '@react-native-community/netinfo';
 import { Alert } from 'react-native';
 import { logger } from './logger';
@@ -161,6 +162,3 @@ export function useNetworkState() {
     quality: networkService.getConnectionQuality(),
   };
 }
-
-// Add React import for the hook
-import React from 'react';

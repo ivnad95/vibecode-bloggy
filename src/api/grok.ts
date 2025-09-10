@@ -1,23 +1,29 @@
-/*
-IMPORTANT NOTICE: DO NOT REMOVE
-This is a custom client for the Grok API. You may update this service, but you should not need to.
-The Grok API can be communicated with the "openai" package, so you can use the same functions as the openai package. It may not support all the same features, so please be careful.
-
-
-grok-3-latest
-grok-3-fast-latest
-grok-3-mini-latest
-*/
-import OpenAI from "openai";
+import { AIMessage, AIRequestOptions, AIResponse } from "../types/ai";
 import { logger } from "../utils/logger";
 
-export const getGrokClient = () => {
-  const apiKey = process.env.EXPO_PUBLIC_VIBECODE_GROK_API_KEY;
-  if (!apiKey) {
-    logger.warn("Grok API key not found in environment variables");
+const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
+
+export async function grokChat(
+  messages: AIMessage[],
+  options?: AIRequestOptions,
+): Promise<AIResponse> {
+  try {
+    const response = await fetch(`${backendUrl}/api/grok/chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ messages, options }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Grok API error: ${errorText}`);
+    }
+
+    return (await response.json()) as AIResponse;
+  } catch (error) {
+    logger.error("Grok fetch error:", error);
+    throw error;
   }
-  return new OpenAI({
-    apiKey: apiKey,
-    baseURL: "https://api.x.ai/v1",
-  });
-};
+}

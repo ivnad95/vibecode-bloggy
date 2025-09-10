@@ -1,7 +1,9 @@
-import { getOpenAIClient } from "./openai";
+import { openAIChat } from "./openai";
 import { SEOResearchData } from "./seo-research";
 import { retryOpenAICall } from "../utils/retry";
 import { logger } from "../utils/logger";
+import { LRUCache } from "../utils/lru-cache";
+import { sanitizeInput, validatePromptLength } from "../utils/sanitize";
 
 export interface BlogGenerationOptions {
   topic: string;
@@ -48,7 +50,7 @@ export async function generateSEOBlog(
 
 // In-memory cache and request coalescing for blog generation
 const BLOG_TTL_MS = 24 * 60 * 60 * 1000; // 24h
-const blogCacheMem = new Map<string, { data: GeneratedBlog; expiresAt: number }>();
+const blogCacheMem = new LRUCache<string, { data: GeneratedBlog; expiresAt: number }>(50);
 const inFlightBlogs = new Map<string, Promise<GeneratedBlog>>();
 
 function blogKey(opts: BlogGenerationOptions) {
@@ -77,8 +79,9 @@ function blogKey(opts: BlogGenerationOptions) {
 export async function generateEnhancedSEOBlog(
   options: BlogGenerationOptions
 ): Promise<GeneratedBlog> {
-  const client = getOpenAIClient();
-  const key = blogKey(options);
+  const sanitizedTopic = sanitizeInput(options.topic);
+  validatePromptLength(sanitizedTopic);
+  const key = blogKey({ ...options, topic: sanitizedTopic });
 
   // Cache check
   const cached = blogCacheMem.get(key);
@@ -91,7 +94,7 @@ export async function generateEnhancedSEOBlog(
   if (flight) return flight;
 
   const {
-    topic,
+    topic: topicRaw,
     researchData,
     contentType = "guide",
     targetAudience = "general audience",
@@ -101,6 +104,8 @@ export async function generateEnhancedSEOBlog(
     includeSchema = true,
     wordCount = 2500,
   } = options;
+  const topic = sanitizeInput(topicRaw);
+  validatePromptLength(topic);
 
   // Build comprehensive prompt with research data
   let prompt = `You are an expert SEO content writer and digital marketing specialist with deep knowledge of Google's 2024-2025 ranking algorithms, E-E-A-T guidelines, and user experience signals.
@@ -217,24 +222,21 @@ Focus on creating content that genuinely helps users while satisfying search eng
   const task = (async () => {
     // Dynamically calculate max_tokens based on the requested wordCount.
     const maxTokens = Math.min(Math.max(wordCount * 2, 4000), 16000);
-    const response = await retryOpenAICall(() => client.chat.completions.create({
-      model: "gpt-4o-2024-11-20",
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are an expert SEO content writer who creates high-converting, E-E-A-T optimized blog posts that rank well in Google's 2024-2025 algorithms. Always respond with valid JSON matching the requested structure.",
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      max_tokens: maxTokens,
-      temperature: 0.7,
-    }));
+    const response = await retryOpenAICall(() =>
+      openAIChat(
+        [
+          {
+            role: "system",
+            content:
+              "You are an expert SEO content writer who creates high-converting, E-E-A-T optimized blog posts that rank well in Google's 2024-2025 algorithms. Always respond with valid JSON matching the requested structure.",
+          },
+          { role: "user", content: prompt },
+        ],
+        { model: "gpt-4o-2024-11-20", maxTokens: maxTokens, temperature: 0.7 },
+      ),
+    );
 
-    const content = response.choices[0]?.message?.content;
+    const content = response.content;
     if (!content) {
       throw new Error("No content generated");
     }

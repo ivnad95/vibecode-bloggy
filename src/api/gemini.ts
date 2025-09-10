@@ -1,19 +1,29 @@
-/*
-IMPORTANT NOTICE: DO NOT REMOVE
-This is a custom client for the Gemini API. You may update this service, but you should not need to.
-
-Valid model names:
-gemini-1.5-pro-latest
-gemini-1.5-flash-latest
-gemini-1.0-pro-latest
-*/
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { AIMessage, AIRequestOptions, AIResponse } from "../types/ai";
 import { logger } from "../utils/logger";
 
-export const getGeminiClient = () => {
-  const apiKey = process.env.EXPO_PUBLIC_VIBECODE_GEMINI_API_KEY;
-  if (!apiKey) {
-    logger.warn("Gemini API key not found in environment variables");
+const backendUrl = process.env.EXPO_PUBLIC_BACKEND_URL;
+
+export async function geminiChat(
+  messages: AIMessage[],
+  options?: AIRequestOptions,
+): Promise<AIResponse> {
+  try {
+    const response = await fetch(`${backendUrl}/api/gemini/chat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ messages, options }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Gemini API error: ${errorText}`);
+    }
+
+    return (await response.json()) as AIResponse;
+  } catch (error) {
+    logger.error("Gemini fetch error:", error);
+    throw error;
   }
-  return new GoogleGenerativeAI(apiKey);
-};
+}
