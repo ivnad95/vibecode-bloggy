@@ -16,7 +16,7 @@ home/user/workspace
 │   │   ├── image-generation.ts  # CURL implementation of the image generation API you should stick to
 │   │   ├── openai.ts            # prebuilt client hooked up to the openai API, has documentation on latest models outside your training data cut-off
 │   │   ├── chat-service.ts      # prebuilt functions for getting a text response from LLMs.
-│   │   └── anthropic.ts         # Prebuilt client hooked up to the anthropic API, has documentation on latest models outside your training data cut-off
+│   │   └── gemini.ts            # Prebuilt client hooked up to the Gemini API, has documentation on latest models outside your training data cut-off
 │   ├── types/                   
 │   ├── utils/                   
 │   │   └── cn.ts                # includes helper function to merge classnames for tailwind styling

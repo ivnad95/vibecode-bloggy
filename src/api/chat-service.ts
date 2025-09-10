@@ -1,67 +1,65 @@
 /*
 IMPORTANT NOTICE: DO NOT REMOVE
 ./src/api/chat-service.ts
-If the user wants to use AI to generate text, answer questions, or analyze images you can use the functions defined in this file to communicate with the OpenAI, Anthropic, and Grok APIs.
+If the user wants to use AI to generate text, answer questions, or analyze images you can use the functions defined in this file to communicate with the OpenAI, Gemini, and Grok APIs.
 */
 import { AIMessage, AIRequestOptions, AIResponse } from "../types/ai";
-import { getAnthropicClient } from "./anthropic";
+import { getGeminiClient } from "./gemini";
 import { getOpenAIClient } from "./openai";
 import { getGrokClient } from "./grok";
 import { logger } from "../utils/logger";
 
 /**
- * Get a text response from Anthropic
+ * Get a text response from Gemini
  * @param messages - The messages to send to the AI
  * @param options - The options for the request
  * @returns The response from the AI
  */
-export const getAnthropicTextResponse = async (
+export const getGeminiTextResponse = async (
   messages: AIMessage[],
   options?: AIRequestOptions,
 ): Promise<AIResponse> => {
   try {
-    const client = getAnthropicClient();
-    const defaultModel = "claude-3-5-sonnet-20240620";
+    const client = getGeminiClient();
+    const defaultModel = "gemini-1.5-pro-latest";
 
-    const response = await client.messages.create({
-      model: options?.model || defaultModel,
-      messages: messages.map((msg) => ({
-        role: msg.role === "assistant" ? "assistant" : "user",
-        content: msg.content,
+    const model = client.getGenerativeModel({ model: options?.model || defaultModel });
+
+    const response = await model.generateContent({
+      contents: messages.map((msg) => ({
+        role: msg.role === "assistant" ? "model" : "user",
+        parts: [{ text: msg.content }],
       })),
-      max_tokens: options?.maxTokens || 2048,
-      temperature: options?.temperature || 0.7,
+      generationConfig: {
+        maxOutputTokens: options?.maxTokens || 2048,
+        temperature: options?.temperature ?? 0.7,
+      },
     });
 
-    // Handle content blocks from the response
-    const content = response.content.reduce((acc, block) => {
-      if ("text" in block) {
-        return acc + block.text;
-      }
-      return acc;
-    }, "");
+    const content = response.response.text();
 
+    const usage = response.response.usageMetadata;
     return {
       content,
       usage: {
-        promptTokens: response.usage?.input_tokens || 0,
-        completionTokens: response.usage?.output_tokens || 0,
-        totalTokens: (response.usage?.input_tokens || 0) + (response.usage?.output_tokens || 0),
+        promptTokens: usage?.promptTokenCount || 0,
+        completionTokens: usage?.candidatesTokenCount || 0,
+        totalTokens: usage?.totalTokenCount || 0,
       },
     };
   } catch (error) {
-    logger.error("Anthropic API Error:", error);
+    logger.error("Gemini API Error:", error);
     throw error;
   }
 };
 
 /**
- * Get a simple chat response from Anthropic
+ * Get a simple chat response from Gemini
  * @param prompt - The prompt to send to the AI
  * @returns The response from the AI
  */
-export const getAnthropicChatResponse = async (prompt: string): Promise<AIResponse> => {
-  return await getAnthropicTextResponse([{ role: "user", content: prompt }]);
+export const getGeminiChatResponse = async (prompt: string): Promise<AIResponse> => {
+  return await getGeminiTextResponse([{ role: "user", content: prompt }]);
 };
 
 /**
