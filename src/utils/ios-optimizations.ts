@@ -1,4 +1,5 @@
 import { Platform } from "react-native";
+import { logger } from "./logger";
 
 /**
  * iOS-specific optimizations and utilities
@@ -145,7 +146,7 @@ export const iOSAccessibility = {
     announceForAccessibility: (message: string) => {
       if (Platform.OS === "ios") {
         // This would use AccessibilityInfo.announceForAccessibility
-        console.log(`VoiceOver: ${message}`);
+        logger.info(`VoiceOver: ${message}`);
       }
     },
   },

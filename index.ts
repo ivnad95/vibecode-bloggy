@@ -1,5 +1,5 @@
 //DO NOT REMOVE THIS CODE
-console.log("[index] Project ID is: ", process.env.EXPO_PUBLIC_VIBECODE_PROJECT_ID);
+import { logger } from "./src/utils/logger";
 import "./global.css";
 import "react-native-get-random-values";
 import { LogBox } from "react-native";
@@ -13,3 +13,5 @@ import App from "./App";
 // It also ensures that whether you load the app in Expo Go or in a native build,
 // the environment is set up appropriately
 registerRootComponent(App);
+
+logger.debug("[index] Project ID is configured");

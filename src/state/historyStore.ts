@@ -6,6 +6,7 @@ import { BlogPost, BlogMetrics } from "../types/blog";
 import { conductSEOResearch, SEOResearchData } from "../api/seo-research";
 import { generateEnhancedSEOBlog } from "../api/blog-generator";
 import { networkService } from "../utils/network";
+import { logger } from "../utils/logger";
 
 interface HistoryState {
   // Blog history
@@ -436,7 +437,7 @@ const useHistoryStore = create<HistoryState>()(
             set(state => ({ blogs: [...state.blogs, ...importedBlogs] }));
             get().calculateMetrics();
           } catch (error) {
-            console.error('Failed to import blogs:', error);
+            logger.error('Failed to import blogs:', error);
           }
         }
       },

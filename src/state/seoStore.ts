@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SEOResearchData } from "../api/seo-research";
+import { logger } from "../utils/logger";
 
 interface SEOResearchHistory {
   id: string;
@@ -273,7 +274,7 @@ const useSEOStore = create<SEOState>()(
             get().calculateAnalytics();
           }
         } catch (error) {
-          console.error("Failed to import research:", error);
+          logger.error("Failed to import research:", error);
         }
       },
       

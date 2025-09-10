@@ -21,6 +21,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { Readable } from "stream";
 import { finished } from "stream/promises";
+import { logger } from "./src/utils/logger";
 
 async function downloadImage(url: string, outputPath: string): Promise<void> {
   const response = await fetch(url);
@@ -31,7 +32,7 @@ async function downloadImage(url: string, outputPath: string): Promise<void> {
   const fileStream = fs.createWriteStream(outputPath);
   // @ts-ignore - Node.js types are not fully compatible with the fetch API
   await finished(Readable.fromWeb(response.body).pipe(fileStream));
-  console.log(`Image downloaded successfully to ${outputPath}`);
+  logger.info(`Image downloaded successfully to ${outputPath}`);
 }
 
 async function logImageGeneration(prompt: string, imageUrl: string): Promise<void> {
@@ -52,14 +53,14 @@ async function main() {
     //update this to
     const prompt = "describe the asset you want to generate";
 
-    console.log("Generating image with prompt:", prompt);
+    logger.info("Generating image with prompt:", prompt);
     const imageUrl = await generateImage(prompt, {
       size: "1024x1024",
       quality: "high",
       format: "png",
     });
 
-    console.log("Image generated successfully. URL:", imageUrl);
+    logger.info("Image generated successfully. URL:", imageUrl);
 
     // Log the image generation
     await logImageGeneration(prompt, imageUrl);
@@ -67,11 +68,11 @@ async function main() {
     const outputPath = path.join(__dirname, "assets", "japanese-art-logo.png");
     await downloadImage(imageUrl, outputPath);
 
-    console.log("Process completed successfully");
-    console.log("Image URL:", imageUrl);
-    console.log("Image saved to:", outputPath);
+    logger.info("Process completed successfully");
+    logger.info("Image URL:", imageUrl);
+    logger.info("Image saved to:", outputPath);
   } catch (error) {
-    console.error("Error:", error);
+    logger.error("Error:", error);
   }
 }
 

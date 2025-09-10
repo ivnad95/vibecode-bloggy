@@ -4,6 +4,8 @@ This is a custom audio transcription service that uses a custom API endpoint mai
 You can use this function to transcribe audio files, and it will return the text of the audio file.
 */
 
+import { logger } from "../utils/logger";
+
 /**
  * Transcribe an audio file
  * @param localAudioUri - The local URI of the audio file to transcribe. Obtained via the expo-av library.
@@ -43,7 +45,7 @@ export const transcribeAudio = async (localAudioUri: string) => {
     const result = await response.json();
     return result.text;
   } catch (error) {
-    console.error("Transcription error:", error);
+    logger.error("Transcription error:", error);
     throw error;
   }
 };

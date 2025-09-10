@@ -1,6 +1,7 @@
 import { getOpenAIClient } from "./openai";
 import { SEOResearchData } from "./seo-research";
 import { retryOpenAICall } from "../utils/retry";
+import { logger } from "../utils/logger";
 
 export interface BlogGenerationOptions {
   topic: string;
@@ -267,7 +268,7 @@ Focus on creating content that genuinely helps users while satisfying search eng
 
       return blogData;
     } catch (parseError) {
-      console.error("Failed to parse blog JSON:", parseError);
+      logger.error("Failed to parse blog JSON:", parseError);
       // Return fallback structure with the raw content
       return createFallbackBlogData(topic, content);
     }

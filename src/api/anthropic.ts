@@ -8,11 +8,12 @@ claude-3-7-sonnet-latest
 claude-3-5-haiku-latest
 */
 import Anthropic from "@anthropic-ai/sdk";
+import { logger } from "../utils/logger";
 
 export const getAnthropicClient = () => {
   const apiKey = process.env.EXPO_PUBLIC_VIBECODE_ANTHROPIC_API_KEY;
   if (!apiKey) {
-    console.warn("Anthropic API key not found in environment variables");
+    logger.warn("Anthropic API key not found in environment variables");
   }
   return new Anthropic({
     apiKey: apiKey,

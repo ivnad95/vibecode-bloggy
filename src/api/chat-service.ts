@@ -7,6 +7,7 @@ import { AIMessage, AIRequestOptions, AIResponse } from "../types/ai";
 import { getAnthropicClient } from "./anthropic";
 import { getOpenAIClient } from "./openai";
 import { getGrokClient } from "./grok";
+import { logger } from "../utils/logger";
 
 /**
  * Get a text response from Anthropic
@@ -49,7 +50,7 @@ export const getAnthropicTextResponse = async (
       },
     };
   } catch (error) {
-    console.error("Anthropic API Error:", error);
+    logger.error("Anthropic API Error:", error);
     throw error;
   }
 };
@@ -90,7 +91,7 @@ export const getOpenAITextResponse = async (messages: AIMessage[], options?: AIR
       },
     };
   } catch (error) {
-    console.error("OpenAI API Error:", error);
+    logger.error("OpenAI API Error:", error);
     throw error;
   }
 };
@@ -131,7 +132,7 @@ export const getGrokTextResponse = async (messages: AIMessage[], options?: AIReq
       },
     };
   } catch (error) {
-    console.error("Grok API Error:", error);
+    logger.error("Grok API Error:", error);
     throw error;
   }
 };
