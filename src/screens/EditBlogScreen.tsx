@@ -33,6 +33,7 @@ import GlassButton from "../components/ui/GlassButton";
 import GlassInput from "../components/ui/GlassInput";
 import MetricsCard from "../components/ui/MetricsCard";
 import GlassModal from "../components/ui/GlassModal";
+import { logger } from "../utils/logger";
 
 
 type EditBlogScreenNavigationProp = NativeStackNavigationProp<
@@ -348,7 +349,7 @@ export default function EditBlogScreen({ navigation, route }: Props) {
 
       updateBlog(blog.id, updatedBlog);
     } catch (error) {
-      console.error("Auto-save failed:", error);
+      logger.error("Auto-save failed:", error);
     }
   };
 

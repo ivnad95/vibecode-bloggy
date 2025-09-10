@@ -30,6 +30,7 @@ import GlassButton from "../components/ui/GlassButton";
 import GlassInput from "../components/ui/GlassInput";
 import ProgressIndicator from "../components/ui/ProgressIndicator";
 import GlassModal from "../components/ui/GlassModal";
+import { logger } from "../utils/logger";
 
 type ImageGeneratorScreenNavigationProp = NativeStackNavigationProp<
   HomeStackParamList,
@@ -154,7 +155,7 @@ export default function ImageGeneratorScreen({ route }: Props) {
       }
       
       showModal("Generation Failed", errorMessage, "destructive");
-      console.error("Image generation error:", error);
+      logger.error("Image generation error:", error);
     } finally {
       setIsGenerating(false);
     }

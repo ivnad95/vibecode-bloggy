@@ -1,4 +1,5 @@
 import { networkService, NetworkError } from './network';
+import { logger } from './logger';
 
 export interface RetryOptions {
   maxAttempts?: number;
@@ -162,7 +163,7 @@ export async function retryApiCall<T>(
     baseDelay: 1000,
     maxDelay: 10000,
     onRetry: (attempt, error) => {
-      console.log(`API call failed (attempt ${attempt}):`, error.message);
+      logger.warn(`API call failed (attempt ${attempt}):`, error.message);
     },
     ...options,
   });
@@ -189,7 +190,7 @@ export async function retryOpenAICall<T>(
              message.includes('429');
     },
     onRetry: (attempt, error) => {
-      console.log(`OpenAI API retry (attempt ${attempt}):`, error.message);
+      logger.warn(`OpenAI API retry (attempt ${attempt}):`, error.message);
     },
   });
 }

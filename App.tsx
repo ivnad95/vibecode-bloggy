@@ -6,6 +6,7 @@ import * as Font from "expo-font";
 import AppNavigator from "./src/navigation/AppNavigator";
 import { networkService } from "./src/utils/network";
 import useHistoryStore from "./src/state/historyStore";
+import { logger } from "./src/utils/logger";
 
 // Keep the splash screen visible while we fetch resources
 SplashScreen.preventAutoHideAsync();
@@ -23,7 +24,7 @@ export default function App() {
       // Artificial delay to show splash screen (optional)
       await new Promise(resolve => setTimeout(resolve, 1000));
     } catch (e) {
-      console.warn(e);
+      logger.warn(e);
     } finally {
       // Tell the application to render
       await SplashScreen.hideAsync();
@@ -37,7 +38,7 @@ export default function App() {
     const unsubscribe = networkService.addListener((networkState) => {
       if (networkState.isConnected && networkState.isInternetReachable) {
         // Process queue when coming back online
-        processQueue().catch(console.error);
+        processQueue().catch((err) => logger.error(err));
       }
     });
     

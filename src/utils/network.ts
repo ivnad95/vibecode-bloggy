@@ -1,5 +1,6 @@
 import NetInfo, { NetInfoState, NetInfoStateType } from '@react-native-community/netinfo';
 import { Alert } from 'react-native';
+import { logger } from './logger';
 
 export interface NetworkState {
   isConnected: boolean;
@@ -83,7 +84,7 @@ class NetworkService {
       const state = await NetInfo.fetch();
       return (state.isConnected ?? false) && (state.isInternetReachable ?? false);
     } catch (error) {
-      console.warn('Failed to check connectivity:', error);
+      logger.warn('Failed to check connectivity:', error);
       return false;
     }
   }

@@ -31,6 +31,7 @@ import KeywordChip from "../components/ui/KeywordChip";
 import MetricsCard from "../components/ui/MetricsCard";
 import ProgressIndicator from "../components/ui/ProgressIndicator";
 import GlassModal from "../components/ui/GlassModal";
+import { logger } from "../utils/logger";
 
 type ResearchScreenNavigationProp = NativeStackNavigationProp<
   HomeStackParamList,
@@ -119,7 +120,7 @@ export default function ResearchScreen({ navigation, route }: Props) {
       addResearch(topic, research);
     } catch (error) {
       showModal("Research Failed", "Failed to conduct SEO research. Please try again.", "destructive");
-      console.error("SEO research error:", error);
+      logger.error("SEO research error:", error);
     } finally {
       setIsLoading(false);
       setIsResearching(false);

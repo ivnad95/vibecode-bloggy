@@ -6,6 +6,8 @@ This endpoint uses openai's latest image generation API, AKA gpt4o, AKA gpt-imag
 Does not support video and audio generation.
 */
 
+import { logger } from "../utils/logger";
+
 // API endpoint configuration
 const baseUrl = "https://api.vibecodeapp.com";
 const endpoint = "/api/storage/generate-image";
@@ -46,22 +48,22 @@ export async function generateImage(
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error("[AssetGenerationService] Error response:", errorData);
+      logger.error("[AssetGenerationService] Error response:", errorData);
       throw new Error(`Image generation API error: ${response.status} ${JSON.stringify(errorData)}`);
     }
 
     const result = await response.json();
-    console.log("[AssetGenerationService] Image generated successfully");
+    logger.info("[AssetGenerationService] Image generated successfully");
 
     // Return the image data from the response
     if (result.success && result.data) {
       return result.data.imageUrl as string;
     } else {
-      console.error("[AssetGenerationService] Invalid response format:", result);
+      logger.error("[AssetGenerationService] Invalid response format:", result);
       throw new Error("Invalid response format from API");
     }
   } catch (error) {
-    console.error("Image Generation Error:", error);
+    logger.error("Image Generation Error:", error);
     throw error;
   }
 }

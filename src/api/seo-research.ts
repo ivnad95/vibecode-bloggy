@@ -1,5 +1,6 @@
 import { getOpenAIClient } from "./openai";
 import { retryOpenAICall } from "../utils/retry";
+import { logger } from "../utils/logger";
 
 export interface SEOKeyword {
   keyword: string;
@@ -155,12 +156,12 @@ Format your response as a detailed JSON object that matches the TypeScript inter
         const researchData = JSON.parse(jsonMatch[0]) as SEOResearchData;
         return researchData;
       } catch (parseError) {
-        console.error("Failed to parse SEO research JSON:", parseError);
+        logger.error("Failed to parse SEO research JSON:", parseError);
         // Return fallback data structure
         return createFallbackSEOData(topic);
       }
     } catch (error) {
-      console.error("Error conducting SEO research:", error);
+      logger.error("Error conducting SEO research:", error);
       throw new Error("Failed to conduct SEO research");
     }
   })();
@@ -329,7 +330,7 @@ Format as JSON matching the TypeScript interface.`;
     
     return JSON.parse(jsonMatch[0]);
   } catch (error) {
-    console.error("Error generating content outline:", error);
+    logger.error("Error generating content outline:", error);
     // Return fallback outline
     return {
       title: `The Complete Guide to ${topic}`,
