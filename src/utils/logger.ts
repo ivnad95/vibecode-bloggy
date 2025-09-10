@@ -1,5 +1,3 @@
-import util from 'util';
-
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 const LEVELS: Record<LogLevel, number> = {
@@ -9,14 +7,15 @@ const LEVELS: Record<LogLevel, number> = {
   error: 40,
 };
 
-const envLevel = (process.env.LOG_LEVEL as LogLevel) || (process.env.NODE_ENV === 'production' ? 'warn' : 'debug');
-const CURRENT_LEVEL = LEVELS[envLevel] ?? LEVELS.debug;
-
-const SENSITIVE_KEYS = ['api', 'key', 'token', 'secret', 'authorization', 'content'];
+const SENSITIVE_KEYS = ['api', 'key', 'token', 'secret', 'authorization', 'password', 'content'];
 
 function sanitize(value: any): any {
   if (value instanceof Error) {
-    return { name: value.name };
+    return { name: value.name, message: sanitize(value.message) };
+  }
+
+  if (typeof value === 'string') {
+    return SENSITIVE_KEYS.some((p) => value.toLowerCase().includes(p)) ? '[REDACTED]' : value;
   }
 
   if (Array.isArray(value)) {
@@ -38,12 +37,19 @@ function sanitize(value: any): any {
   return value;
 }
 
+function getCurrentLevel() {
+  const envLevel =
+    (process.env.LOG_LEVEL as LogLevel) ||
+    (process.env.NODE_ENV === 'production' ? 'warn' : 'debug');
+  return LEVELS[envLevel] ?? LEVELS.debug;
+}
+
 function log(level: LogLevel, ...args: any[]) {
-  if (LEVELS[level] < CURRENT_LEVEL) return;
+  if (LEVELS[level] < getCurrentLevel()) return;
   const sanitized = args.map((arg) => sanitize(arg));
-  const method = level === 'debug' ? 'log' : level;
+  const method = level === 'debug' ? 'debug' : level;
   // eslint-disable-next-line no-console
-  (console as any)[method](...sanitized.map((a) => (typeof a === 'string' ? a : util.inspect(a, { depth: null }))));
+  (console as any)[method](...sanitized);
 }
 
 export const logger = {
